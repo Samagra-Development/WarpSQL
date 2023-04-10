@@ -5,4 +5,5 @@
 
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
+- [ ] [Citus](https://www.citusdata.com/)
 
