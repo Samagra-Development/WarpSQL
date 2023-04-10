@@ -1,5 +1,8 @@
 <img src="http://www.timescale.com/img/timescale-wordmark-blue.svg" alt="Timescale" width="300"/>
 
+## Test on GitPod
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
+
 ## What is TimescaleDB?
 
 TimescaleDB is an open-source database designed to make SQL scalable

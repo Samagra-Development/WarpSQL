@@ -1,0 +1,16 @@
+image:
+  file: Dockerfile
+
+tasks:
+  - init: echo "Building the Docker image..."
+    command: docker build -t merged_image .
+
+  - init: echo "Running the Docker container..."
+    command: docker run --name merged_container -d merged_image
+
+  - init: echo "Inspecting the running container..."
+    command: docker ps
+
+ports:
+  - port: 5432
+    onOpen: ignore
