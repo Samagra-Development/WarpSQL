@@ -1,10 +1,13 @@
 ARG PG_VERSION
 ARG PREV_IMAGE
 ARG TS_VERSION
+ARG PG_MAJOR=15
+ARG GO_VERSION=1.18.7
+ARG OSS_ONLY
+
 ############################
 # Build tools binaries in separate image
 ############################
-ARG GO_VERSION=1.18.7
 FROM golang:${GO_VERSION}-alpine AS tools
 
 ENV TOOLS_VERSION 0.8.1
@@ -16,10 +19,7 @@ RUN apk update && apk add --no-cache git gcc musl-dev \
 ############################
 # Grab old versions from previous version
 ############################
-ARG PG_VERSION
-ARG PREV_IMAGE
 FROM ${PREV_IMAGE} AS oldversions
-# Remove update files, mock files, and all but the last 5 .so/.sql files
 RUN rm -f $(pg_config --sharedir)/extension/timescaledb*mock*.sql \
     && if [ -f $(pg_config --pkglibdir)/timescaledb-tsl-1*.so ]; then rm -f $(ls -1 $(pg_config --pkglibdir)/timescaledb-tsl-1*.so | head -n -5); fi \
     && if [ -f $(pg_config --pkglibdir)/timescaledb-1*.so ]; then rm -f $(ls -1 $(pg_config --pkglibdir)/timescaledb-*.so | head -n -5); fi \
@@ -28,9 +28,7 @@ RUN rm -f $(pg_config --sharedir)/extension/timescaledb*mock*.sql \
 ############################
 # Now build image and copy in tools
 ############################
-ARG PG_VERSION
-FROM postgres:${PG_VERSION}-alpine
-ARG OSS_ONLY
+FROM postgres:${PG_MAJOR}-alpine
 
 LABEL maintainer="Timescale https://www.timescale.com"
 
@@ -39,7 +37,6 @@ COPY --from=tools /go/bin/* /usr/local/bin/
 COPY --from=oldversions /usr/local/lib/postgresql/timescaledb-*.so /usr/local/lib/postgresql/
 COPY --from=oldversions /usr/local/share/postgresql/extension/timescaledb--*.sql /usr/local/share/postgresql/extension/
 
-ARG TS_VERSION
 RUN set -ex \
     && apk add libssl1.1 \
     && apk add --no-cache --virtual .fetch-deps \
@@ -70,5 +67,4 @@ RUN set -ex \
     \
     && if [ "${OSS_ONLY}" != "" ]; then rm -f $(pg_config --pkglibdir)/timescaledb-tsl-*.so; fi \
     && apk del .fetch-deps .build-deps \
-    && rm -rf /build \
-    && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
+    && rm

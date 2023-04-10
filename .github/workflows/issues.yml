@@ -1,0 +1,15 @@
+name: Add bugs to bugs project
+
+on:
+  issues:
+    types: [ opened ]
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v0.1.0
+        with:
+          project-url: https://github.com/orgs/timescale/projects/55
+          github-token: ${{ secrets.ORG_AUTOMATION_TOKEN }}
