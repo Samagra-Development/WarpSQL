@@ -10,7 +10,7 @@ PREV_TS_IMAGE="samagragovernance/postgres:$(PREV_TS_VERSION)-pg$(PG_VER_NUMBER)$
 PREV_IMAGE=$(shell if docker pull "$(PREV_TS_IMAGE)" >/dev/null 2>&1; then echo "$(PREV_TS_IMAGE)"; else echo "timescale/timescaledb:$(PREV_TS_VERSION)-pg$(PG_VER_NUMBER)$(PREV_EXTRA)"; fi )
 # Beta releases should not be tagged as latest, so BETA is used to track.
 BETA=$(findstring rc,$(TS_VERSION))
-PLATFORM=linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
+PLATFORM=linux/amd64,linux/arm64
 
 # PUSH_MULTI can be set to nothing for dry-run without pushing during multi-arch build
 PUSH_MULTI=--push
