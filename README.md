@@ -19,7 +19,7 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
 ### Usage with Compose
 
-```docker
+```yaml
 version: '3.6'
 services:
   timescaledb:
