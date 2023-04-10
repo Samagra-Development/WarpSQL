@@ -16,3 +16,21 @@ Opinionated extensions to Postgres packaged as a single docker deployment.
 - [ ] [Pg Repack](https://github.com/reorg/pg_repack)
 
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
+
+### Usage with Compose
+
+```docker
+version: '3.6'
+services:
+  timescaledb:
+    container_name: timescaledb
+    image: samagragovernance/postgres:latest-pg15
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: warpSQLUser
+      POSTGRES_PASSWORD: warpSQLPass
+```
