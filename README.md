@@ -7,3 +7,4 @@
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [ ] [Citus](https://www.citusdata.com/)
 
+Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
