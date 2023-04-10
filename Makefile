@@ -2,7 +2,7 @@ NAME=timescaledb
 # Default is to timescaledev to avoid unexpected push to the main repo
 # Set ORG to timescale in the caller
 ORG=timescaledev
-PG_VER=pg12
+PG_VER=pg15
 PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
 TS_VERSION=main
 PREV_TS_VERSION=$(shell wget --quiet -O - https://raw.githubusercontent.com/timescale/timescaledb/${TS_VERSION}/version.config | grep update_from_version | sed -e 's!update_from_version = !!')

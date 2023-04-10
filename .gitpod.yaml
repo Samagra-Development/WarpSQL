@@ -3,7 +3,7 @@ image:
 
 tasks:
   - init: echo "Building the Docker image..."
-    command: docker build -t merged_image .
+    command: PG_VERSION=15 docker build -t merged_image .
 
   - init: echo "Running the Docker container..."
     command: docker run --name merged_container -d merged_image
