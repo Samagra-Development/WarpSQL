@@ -9,7 +9,6 @@ Opinionated extensions to Postgres packaged as a single docker deployment.
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [ ] [Citus](https://www.citusdata.com/)
-- [ ] [PG Stats Statements](https://www.postgresql.org/docs/current/pgstatstatements.html)
 - [ ] [PostGIS](https://postgis.net)
 - [ ] [ZomboDB](https://github.com/zombodb/zombodb)
 - [ ] [PLV8](https://github.com/plv8/plv8)
