@@ -22,8 +22,8 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 ```yaml
 version: '3.6'
 services:
-  timescaledb:
-    container_name: timescaledb
+  warpsql:
+    container_name: warpsql
     image: samagragovernance/postgres:latest-pg15
     restart: always
     ports:
