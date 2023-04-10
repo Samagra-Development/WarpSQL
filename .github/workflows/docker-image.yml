@@ -15,12 +15,12 @@ on:
         required: false
         default: false
 env:
-  ORG: timescale #timescaledev
-  TS_VERSION: ${{ github.event.inputs.version || '2.10.0' }}
+  ORG: samagragovernance
+  TS_VERSION: main
 jobs:
 
   # Build multi-arch TimescaleDB images for both TSL and OSS code.
-  timescaledb:
+  postgres:
 
     name: PG${{ matrix.pg }}${{ matrix.oss }}
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
       - name: Login to DockerHub Registry
         run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
 
-      - name: Build and push multi-platform Docker image for TimescaleDB
+      - name: Build and push multi-platform Docker image for postgres
         run: |
           if [ "${{ github.event.inputs.no_tag_latest }}" == "true" ]
           then
@@ -76,9 +76,6 @@ jobs:
 
       - name: Build and push amd64 Docker image for TimescaleDB bitnami
         run: |
-          if [ "${{ github.event.inputs.no_tag_latest }}" == "true" ]
-          then
-              export BETA=1
-          fi
+          export BETA=1
           make push ORG=$ORG PG_VER=pg${{ matrix.pg }} TS_VERSION=$TS_VERSION BETA=$BETA
         working-directory: bitnami
