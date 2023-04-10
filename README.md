@@ -1,4 +1,5 @@
 # WarpSQL
+Opinionated extensions to Postgres packaged as a single docker deployment.
 
 ### Test on GitPod
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
