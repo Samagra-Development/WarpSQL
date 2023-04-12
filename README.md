@@ -1,5 +1,7 @@
 # WarpSQL
-Opinionated extensions to Postgres packaged as a single docker deployment.
+Opinionated extensions to Postgres packaged as a single docker deployment. Why install 10 DBs when you can can have everthing  at once (maybe not everything).
+
+Certified as Indie Hacker's best friend!!!
 
 ### Test on GitPod
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
