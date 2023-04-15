@@ -131,3 +131,44 @@ RUN set -ex \
     && cd ~ \
     && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
     && apk del .citus-deps .citus-build-deps
+
+## Adding PostGIS
+# Install PostGIS dependencies
+RUN apk add --no-cache --virtual .postgis-deps \
+    geos-dev \
+    gdal-dev \
+    proj-dev \
+    curl \
+    json-c-dev \
+    protobuf-c-dev
+
+# Install PostGIS
+ARG POSTGIS_VERSION
+RUN set -ex \
+    && apk add --no-cache --virtual .postgis-build-deps \
+        gcc \
+        g++ \
+        libc-dev \
+        make \
+        libxml2-dev \
+        musl-dev \
+        perl \
+        clang \
+        geos-dev \
+        gdal-dev \
+        proj-dev \
+        protobuf-c-dev \
+        llvm15-dev \
+        json-c-dev \
+    && POSTGIS_DOWNLOAD_URL="https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/postgis.tar.gz "${POSTGIS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/postgis.tar.gz \
+    && chown -R postgres:postgres /tmp/postgis-${POSTGIS_VERSION} \
+    && cd /tmp/postgis-${POSTGIS_VERSION} \
+    && PATH="/usr/local/pgsql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/postgis.tar.gz /tmp/postgis-${POSTGIS_VERSION} \
+    && apk del .postgis-deps .postgis-build-deps
+    
