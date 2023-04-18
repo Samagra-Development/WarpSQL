@@ -80,6 +80,7 @@ RUN set -ex \
             make \
             cmake \
             wget \
+            postgis \
     && mkdir -p /build/ \
     && git clone https://github.com/timescale/timescaledb /build/timescaledb \
     \
@@ -125,8 +126,8 @@ RUN set -ex \
         /var/tmp/* \
     \
     # Update shared_preload_libraries
-    && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
-    
+    && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb,postgis'/g" /opt/bitnami/postgresql/conf/postgresql.conf
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
