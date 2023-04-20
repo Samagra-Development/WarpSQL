@@ -51,7 +51,7 @@ RUN set +o pipefail \
 ARG PG_VERSION
 FROM bitnami/postgresql:${PG_VERSION}
 ARG PG_VERSION
-ARG CITUS_VERSION="11.2.0"
+ARG CITUS_VERSION
 
 LABEL maintainer="Timescale https://www.timescale.com"
 

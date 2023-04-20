@@ -105,7 +105,7 @@ RUN apk add --no-cache --virtual .citus-deps \
     jq
 
 # Install Citus
-ARG CITUS_VERSION="11.2.0"
+ARG CITUS_VERSION
 RUN set -ex \
     && apk add --no-cache --virtual .citus-build-deps \
         gcc \
