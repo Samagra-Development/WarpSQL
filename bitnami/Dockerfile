@@ -51,6 +51,7 @@ RUN set +o pipefail \
 ARG PG_VERSION
 FROM bitnami/postgresql:${PG_VERSION}
 ARG PG_VERSION
+ARG CITUS_VERSION="11.2.0"
 
 LABEL maintainer="Timescale https://www.timescale.com"
 
@@ -89,6 +90,22 @@ RUN set -ex \
     && cd build && make install \
     && cd ~ \
     \
+    # Install Citus
+    && apt-get update \
+    && apt-get install -y curl liblz4-dev libzstd-dev clang libkrb5-dev libicu-dev libxslt1-dev libxml2-dev llvm-dev libcurl4-openssl-dev \
+    && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/citus.tar.gz \
+    && addgroup --system postgres \
+    && adduser --system --ingroup postgres --home /opt/bitnami/postgresql --no-create-home postgres \
+    && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
+    && cd /tmp/citus-${CITUS_VERSION} \
+    && PATH="/opt/bitnami/postgresql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
+    \
     && apt-get autoremove --purge -y \
             \
             build-essential \
@@ -105,8 +122,11 @@ RUN set -ex \
         "${HOME}/.cache" \
         /var/lib/apt/lists/* \
         /tmp/*               \
-        /var/tmp/*
-
+        /var/tmp/* \
+    \
+    # Update shared_preload_libraries
+    && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
+    
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
