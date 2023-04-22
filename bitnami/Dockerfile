@@ -80,7 +80,6 @@ RUN set -ex \
             make \
             cmake \
             wget \
-            postgis \
     && mkdir -p /build/ \
     && git clone https://github.com/timescale/timescaledb /build/timescaledb \
     \
@@ -126,7 +125,25 @@ RUN set -ex \
         /var/tmp/* \
     \
     # Update shared_preload_libraries
-    && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb,postgis'/g" /opt/bitnami/postgresql/conf/postgresql.conf
+    && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
+    
+# Add PostGIS Extension
+ARG POSTGIS_MAJOR
+ARG PG_MAJOR
+ARG POSTGIS_VERSION
+
+RUN apt-get update \
+     && apt-get install -y lsb-release gnupg2 \
+     && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
+     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+     && apt-get update \
+      && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
+      && apt-get install -y --no-install-recommends \
+           ca-certificates \
+           \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
+      && rm -rf /var/lib/apt/lists/*
 
 USER 1001
 

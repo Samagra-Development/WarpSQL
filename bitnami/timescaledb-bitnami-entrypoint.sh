@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# We have to use the Bitnami configuration variable to add TimescaleDB, Citus, and PostGIS to
+# We have to use the Bitnami configuration variable to add TimescaleDB, Citus to
 # the shared preload list, or else it gets overwritten.
 if [ -z "$POSTGRESQL_SHARED_PRELOAD_LIBRARIES" ]
 then
-    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb,postgis"
+    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb"
 else
-    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb,postgis,$POSTGRESQL_SHARED_PRELOAD_LIBRARIES"
+    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb,$POSTGRESQL_SHARED_PRELOAD_LIBRARIES"
 fi
 export POSTGRESQL_SHARED_PRELOAD_LIBRARIES
 

@@ -73,7 +73,7 @@ RUN set -ex \
     && rm -rf /build \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
-# Add Citus to shared_preload_libraries
+# Update to shared_preload_libraries
 RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements'" >> /usr/local/share/postgresql/postgresql.conf.sample
 
 # Adding PG Vector
@@ -132,43 +132,99 @@ RUN set -ex \
     && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
     && apk del .citus-deps .citus-build-deps
 
-## Adding PostGIS
-# Install PostGIS dependencies
-RUN apk add --no-cache --virtual .postgis-deps \
-    geos-dev \
-    gdal-dev \
-    proj-dev \
-    curl \
-    json-c-dev \
-    protobuf-c-dev
 
-# Install PostGIS
 ARG POSTGIS_VERSION
-RUN set -ex \
-    && apk add --no-cache --virtual .postgis-build-deps \
-        gcc \
+ARG POSTGIS_SHA256
+
+RUN set -eux \
+    \
+    &&  if   [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
+            set -eux ; \
+            export GEOS_ALPINE_VER=3.11 ; \
+            export GDAL_ALPINE_VER=3.5 ; \
+            export PROJ_ALPINE_VER=9.1 ; \
+        elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
+            set -eux ; \
+            export GEOS_ALPINE_VER=3.8 ; \
+            export GDAL_ALPINE_VER=3.2 ; \
+            export PROJ_ALPINE_VER=7.2 ; \
+            \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.14/main'      >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.14/community' >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.13/main'      >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.13/community' >> /etc/apk/repositories ; \
+            \
+        else \
+            set -eux ; \
+            echo ".... unknown \$POSTGIS_VERSION ...." ; \
+            exit 1 ; \
+        fi \
+    \
+    && apk add --no-cache --virtual .fetch-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
+    && apk add --no-cache --virtual .build-deps \
+        \
+        gdal-dev~=${GDAL_ALPINE_VER} \
+        geos-dev~=${GEOS_ALPINE_VER} \
+        proj-dev~=${PROJ_ALPINE_VER} \
+        \
+        autoconf \
+        automake \
+        clang-dev \
+        cunit-dev \
+        file \
         g++ \
-        libc-dev \
-        make \
-        libxml2-dev \
-        musl-dev \
-        perl \
-        clang \
-        geos-dev \
-        gdal-dev \
-        proj-dev \
-        protobuf-c-dev \
-        llvm15-dev \
+        gcc \
+        gettext-dev \
+        git \
         json-c-dev \
-    && POSTGIS_DOWNLOAD_URL="https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz" \
-    && curl -L -o /tmp/postgis.tar.gz "${POSTGIS_DOWNLOAD_URL}" \
-    && tar -C /tmp -xvf /tmp/postgis.tar.gz \
-    && chown -R postgres:postgres /tmp/postgis-${POSTGIS_VERSION} \
-    && cd /tmp/postgis-${POSTGIS_VERSION} \
-    && PATH="/usr/local/pgsql/bin:$PATH" ./configure \
-    && make \
+        libtool \
+        libxml2-dev \
+        llvm-dev \
+        make \
+        pcre-dev \
+        perl \
+        protobuf-c-dev \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
+    && ./autogen.sh \
+    && ./configure \
+        --with-pcredir="$(pcre-config --prefix)" \
+    && make -j$(nproc) \
     && make install \
-    && cd ~ \
-    && rm -rf /tmp/postgis.tar.gz /tmp/postgis-${POSTGIS_VERSION} \
-    && apk del .postgis-deps .postgis-build-deps
-    
+    \
+# add .postgis-rundeps
+    && apk add --no-cache --virtual .postgis-rundeps \
+        \
+        gdal~=${GDAL_ALPINE_VER} \
+        geos~=${GEOS_ALPINE_VER} \
+        proj~=${PROJ_ALPINE_VER} \
+        \
+        json-c \
+        libstdc++ \
+        pcre \
+        protobuf-c \
+        \
+        # ca-certificates: for accessing remote raster files
+        #   fix https://github.com/postgis/docker-postgis/issues/307
+        ca-certificates \
+# clean
+    && cd / \
+    && rm -rf /usr/src/postgis \
+    && apk del .fetch-deps .build-deps 

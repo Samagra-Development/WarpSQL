@@ -4,7 +4,10 @@ NAME=timescaledb
 ORG=timescaledev
 PG_VER=pg15
 CITUS_VERSION="11.2.0"
-POSTGIS_VERSION=3.1.4
+POSTGIS_MAJOR=3
+PG_MAJOR=15
+POSTGIS_VERSION=3.3.2+dfsg-1.pgdg110+1
+
 PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
 
 TS_VERSION=main
@@ -23,7 +26,7 @@ default: image
 .build_$(TS_VERSION)_$(PG_VER): Dockerfile
 	test -n "$(TS_VERSION)"  # TS_VERSION
 	test -n "$(PREV_TS_VERSION)"  # PREV_TS_VERSION
-	docker build -f ./Dockerfile --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) $(TAG) ..
+	docker build -f ./Dockerfile --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg POSTGIS_MAJOR=$(POSTGIS_MAJOR) --build-arg PG_MAJOR=$(PG_MAJOR) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) $(TAG)  ..
 	touch .build_$(TS_VERSION)_$(PG_VER)-bitnami
 
 image: .build_$(TS_VERSION)_$(PG_VER)
