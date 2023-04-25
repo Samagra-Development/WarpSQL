@@ -1,5 +1,5 @@
 <p align="center"><img align="center" width="280" height="280" src="./icon.jpeg"/></p>
-<h3 align="center">WarpSQL!</h3>
+<h1 align="center">WarpSQL!</h3>
 <hr>
 Opinionated extensions to Postgres packaged as a single docker deployment. Why install 10 DBs when you can can have everthing  at once (maybe not everything).
 
