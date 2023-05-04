@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# We have to use the Bitnami configuration variable to add TimescaleDB and Citus to
+# We have to use the Bitnami configuration variable to add TimescaleDB, Citus to
 # the shared preload list, or else it gets overwritten.
 if [ -z "$POSTGRESQL_SHARED_PRELOAD_LIBRARIES" ]
 then
