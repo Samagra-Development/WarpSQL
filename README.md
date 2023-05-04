@@ -13,7 +13,7 @@ Certified as Indie Hacker's best friend!!!
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [x] [Citus](https://www.citusdata.com/)
-- [ ] [PostGIS](https://postgis.net)
+- [x] [PostGIS](https://postgis.net)
 - [ ] [ZomboDB](https://github.com/zombodb/zombodb)
 - [ ] [PLV8](https://github.com/plv8/plv8)
 - [ ] [Pg Repack](https://github.com/reorg/pg_repack)
