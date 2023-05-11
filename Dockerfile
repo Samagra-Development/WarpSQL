@@ -79,10 +79,6 @@ RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements'" >> 
 # Adding PG Vector
 
 RUN cd /tmp
-
-# Installing clang-15
-RUN 
-
 RUN apk add --no-cache --virtual .build-deps \
                 coreutils \
                 dpkg-dev dpkg \
@@ -248,8 +244,6 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
 	util-linux-dev \
 	musl-dev \
 	openssl-dev \
-	# clang-libs \
-    # clang-dev \
     clang15 \
 	tar \
     && gem install --no-document fpm \
