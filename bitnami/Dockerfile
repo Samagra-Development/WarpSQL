@@ -63,126 +63,130 @@ COPY bitnami/timescaledb-bitnami-entrypoint.sh /opt/bitnami/scripts/postgresql/
 
 USER 0
 ARG TS_VERSION
-# RUN set -ex \
-#     && rm -v /opt/bitnami/postgresql/lib/.emptyfile \
-#     && rm -v /opt/bitnami/postgresql/share/extension/.emptyfile \
-#     && mkdir -p /var/lib/apt/lists/partial \
-#     && apt-get update \
-#     && apt-get -y install \
-#             \
-#             build-essential \
-#             libssl-dev \
-#             git \
-#             \
-#             dpkg-dev \
-#             gcc \
-#             libc-dev \
-#             make \
-#             cmake \
-#             wget \
-#     && mkdir -p /build/ \
-#     && git clone https://github.com/timescale/timescaledb /build/timescaledb \
-#     \
-#     # Build current version \
-#     && cd /build/timescaledb && rm -fr build \
-#     && git checkout ${TS_VERSION} \
-#     && ./bootstrap -DCMAKE_BUILD_TYPE=RelWithDebInfo -DREGRESS_CHECKS=OFF -DTAP_CHECKS=OFF -DGENERATE_DOWNGRADE_SCRIPT=ON -DWARNINGS_AS_ERRORS=OFF -DPROJECT_INSTALL_METHOD="docker-bitnami" \
-#     && cd build && make install \
-#     && cd ~ \
-#     \
-#     # Install Citus
-#     && apt-get update \
-#     && apt-get install -y curl liblz4-dev libzstd-dev clang libkrb5-dev libicu-dev libxslt1-dev libxml2-dev llvm-dev libcurl4-openssl-dev \
-#     && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
-#     && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
-#     && tar -C /tmp -xvf /tmp/citus.tar.gz \
-#     && addgroup --system postgres \
-#     && adduser --system --ingroup postgres --home /opt/bitnami/postgresql --no-create-home postgres \
-#     && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
-#     && cd /tmp/citus-${CITUS_VERSION} \
-#     && PATH="/opt/bitnami/postgresql/bin:$PATH" ./configure \
-#     && make \
-#     && make install \
-#     && cd ~ \
-#     && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
-#     \
-#     && apt-get autoremove --purge -y \
-#             \
-#             build-essential \
-#             libssl-dev \
-#             \
-#             dpkg-dev \
-#             gcc \
-#             libc-dev \
-#             make \
-#             cmake \
-#     && apt-get clean -y \
-#     && rm -rf \
-#         /build \
-#         "${HOME}/.cache" \
-#         /var/lib/apt/lists/* \
-#         /tmp/*               \
-#         /var/tmp/* \
-#     \
-#     # Update shared_preload_libraries
-#     && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
+RUN set -ex \
+    && rm -v /opt/bitnami/postgresql/lib/.emptyfile \
+    && rm -v /opt/bitnami/postgresql/share/extension/.emptyfile \
+    && mkdir -p /var/lib/apt/lists/partial \
+    && apt-get update \
+    && apt-get -y install \
+            \
+            build-essential \
+            libssl-dev \
+            git \
+            \
+            dpkg-dev \
+            gcc \
+            libc-dev \
+            make \
+            cmake \
+            wget \
+    && mkdir -p /build/ \
+    && git clone https://github.com/timescale/timescaledb /build/timescaledb \
+    \
+    # Build current version \
+    && cd /build/timescaledb && rm -fr build \
+    && git checkout ${TS_VERSION} \
+    && ./bootstrap -DCMAKE_BUILD_TYPE=RelWithDebInfo -DREGRESS_CHECKS=OFF -DTAP_CHECKS=OFF -DGENERATE_DOWNGRADE_SCRIPT=ON -DWARNINGS_AS_ERRORS=OFF -DPROJECT_INSTALL_METHOD="docker-bitnami" \
+    && cd build && make install \
+    && cd ~ \
+    \
+    # Install Citus
+    && apt-get update \
+    && apt-get install -y curl liblz4-dev libzstd-dev clang libkrb5-dev libicu-dev libxslt1-dev libxml2-dev llvm-dev libcurl4-openssl-dev \
+    && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/citus.tar.gz \
+    && addgroup --system postgres \
+    && adduser --system --ingroup postgres --home /opt/bitnami/postgresql --no-create-home postgres \
+    && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
+    && cd /tmp/citus-${CITUS_VERSION} \
+    && PATH="/opt/bitnami/postgresql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
+    \
+    && apt-get autoremove --purge -y \
+            \
+            build-essential \
+            libssl-dev \
+            \
+            dpkg-dev \
+            gcc \
+            libc-dev \
+            make \
+            cmake \
+    && apt-get clean -y \
+    && rm -rf \
+        /build \
+        "${HOME}/.cache" \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+    # \
+    # # Update shared_preload_libraries
+    # && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
     
-# # Add PostGIS Extension
-# ARG POSTGIS_MAJOR
-# ARG PG_MAJOR
-# ARG POSTGIS_VERSION
+# Add PostGIS Extension
+ARG POSTGIS_MAJOR
+ARG PG_MAJOR
+ARG POSTGIS_VERSION
 
-# RUN apt-get update \
-#      && apt-get install -y lsb-release gnupg2 \
-#      && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
-#      && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-#      && apt-get update \
-#       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
-#       && apt-get install -y --no-install-recommends \
-#            ca-certificates \
-#            \
-#            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-#            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
-#       && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+     && apt-get install -y lsb-release gnupg2 \
+     && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
+     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+     && apt-get update \
+      && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
+      && apt-get install -y --no-install-recommends \
+           ca-certificates \
+           \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
+      && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update -y -qq --fix-missing \
+    && apt-get install -y wget gnupg \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main 15" >> /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list \
+    && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" >> /etc/apt/sources.list \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 \
+    && apt update \
+    && apt-get update -y --fix-missing \
+    && apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev strace pkg-config lsb-release wget software-properties-common gnupg libreadline-dev libgdbm-dev libssl1.0-dev \
+    && wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz \
+    && tar -xzvf openssl-1.0.2l.tar.gz \
+    && cd openssl-1.0.2l \
+    && ./config \
+    && make install \
+    && ln -sf /usr/local/ssl/bin/openssl `which openssl` \
+    && mkdir ruby  \
+	&& cd ruby \
+	&& wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz \
+	&& tar xvfz ruby-2.3.0.tar.gz \
+	&& cd ruby-2.3.0 \
+	&& ./configure  --with-openssl-dir=/usr/include/openssl-1.0 \
+	&& make -j64 \
+	&& make install \
+    && gem install --no-document fpm 
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/.cargo/bin:$PATH" \
+    && export PGRX_HOME="/.pgrx/" \
+    && mkdir -p $PGRX_HOME \
+    && cargo install cargo-pgrx --version 0.8.3 \
+    && cargo pgrx init --pg15=/opt/bitnami/postgresql/bin/pg_config
+
+RUN git clone https://github.com/zombodb/zombodb.git \
+    && cd zombodb \
+    # && sed -i 's/pgrx = "=0.8.3"/pgrx = "=0.8.3"/' Cargo.toml \
+    && export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release
 
 
-RUN apt-get update -y -qq --fix-missing
-RUN apt-get install -y wget gnupg
-
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main 15" >> /etc/apt/sources.list.d/pgdg.list
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN apt update
-RUN apt-get update -y --fix-missing
-
-RUN apt-get install -y git
-RUN apt-get install -y curl
-RUN apt-get install -y clang llvm gcc make build-essential libz-dev zlib1g-dev strace libssl-dev pkg-config
-
-RUN apt-get install lsb-release wget software-properties-common gnupg -y
-
-# Try to install the dependencies one by one
-RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 14
-
-# RUN apt-get install -y postgresql-15 postgresql-server-dev-15
-
-## b/c why not! http://www.inanzzz.com/index.php/post/3zs5/installing-ruby-on-debian-8
-RUN apt-get install -y libreadline-dev libgdbm-dev openssl
-RUN mkdir ruby && \
-	cd ruby && \
-	wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz && \
-	tar xvfz ruby-2.3.0.tar.gz && \
-	cd ruby-2.3.0 && \
-	./configure && \
-	make -j64 && \
-	make install
-RUN gem install --no-document fpm
-
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
-ENV PATH="/home/.cargo/bin:${PATH}"
-RUN cargo install cargo-pgrx
-RUN cargo pgrx init \
-	--pg15=/usr/lib/postgresql/15/bin/pg_config
+#0 166.5 /.cargo/registry/src/github.com-1ecc6299db9ec823/cargo-pgrx-0.9.0/Cargo.toml
+#0 166.5 /.cargo/registry/src/github.com-1ecc6299db9ec823/pgrx-pg-config-0.9.0/Cargo.toml
 
 USER 1001
 
