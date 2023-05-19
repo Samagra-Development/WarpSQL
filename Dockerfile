@@ -74,7 +74,9 @@ RUN set -ex \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Update to shared_preload_libraries
+# Update shared_preload_libraries
 RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements'" >> /usr/local/share/postgresql/postgresql.conf.sample
+
 
 # Adding PG Vector
 
