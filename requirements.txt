@@ -1,0 +1,4 @@
+pgvector
+timescaledb
+citus
+postgis
