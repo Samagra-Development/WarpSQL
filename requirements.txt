@@ -7,3 +7,6 @@ libkrb5-dev
 libpq-dev
 libc-dev
 make
+cmake
+llvm15
+clang
