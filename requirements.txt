@@ -2,3 +2,5 @@ pgvector
 timescaledb-tune
 timescaledb-parallel-copy
 libssl1.1
+libssl-dev
+libkrb5-dev
