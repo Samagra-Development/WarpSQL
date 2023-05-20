@@ -37,3 +37,17 @@ services:
       POSTGRES_USER: warpSQLUser
       POSTGRES_PASSWORD: warpSQLPass
 ```
+
+## Development with GitHub Codespaces
+
+You can use GitHub Codespaces to develop this project in the cloud.
+
+1. Click on the "Code" button.
+2. Select "Open with Codespaces" from the dropdown menu.
+3. Choose the appropriate Codespace configuration.
+4. Wait for the environment to be provisioned.
+5. Once the environment is ready, you can start working on the project.
+6. Install the project dependencies by running the following command in the terminal:
+
+   ```bash
+   pip install -r requirements.txt
