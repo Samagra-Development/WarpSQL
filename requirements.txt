@@ -1,0 +1,12 @@
+pgvector
+timescaledb-tune
+timescaledb-parallel-copy
+libssl1.1
+libssl-dev
+libkrb5-dev
+libpq-dev
+libc-dev
+make
+cmake
+llvm15
+clang
