@@ -51,3 +51,23 @@ By utilizing WarpSQL, you can benefit from the following:
 
 • Extensibility: While WarpSQL already supports a range of extensions, it aims to expand its offerings to include even more powerful tools in the future, such as ZomboDB, PLV8, and Pg Repack.
 Get started with WarpSQL today and experience the convenience of a comprehensive Postgres solution.
+
+## Contribution
+
+You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
+
+## Gitpod
+
+Click the "Open in Gitpod" button above or use the following link:[Open in Gitpod](https://gitpod.io/new/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
+
+• Wait for the Gitpod environment to be created and initialized.
+
+• Once the environment is ready, you can start working on the project.
+
+• Make your desired changes or additions.
+
+• Test your changes and ensure they meet the project's guidelines.
+
+• Commit and push your changes to your forked repository.
+
+• Create a pull request from your forked repository to the main WarpSQL repository.
