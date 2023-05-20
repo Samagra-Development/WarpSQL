@@ -135,4 +135,3 @@ To publish the WarpSQL project, follow the guidelines below:
 • Release notes: Prepare release notes for each new version, highlighting the changes, bug fixes, and new features included in the release. This helps users understand what to expect when upgrading to a new version.
 
 • Distribution and deployment: Specify how the project should be distributed or deployed. If there are specific packages, containers, or deployment configurations, provide relevant documentation or instructions.
-
