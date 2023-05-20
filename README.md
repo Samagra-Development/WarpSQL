@@ -71,3 +71,27 @@ Click the "Open in Gitpod" button above or use the following link:[Open in Gitpo
 • Commit and push your changes to your forked repository.
 
 • Create a pull request from your forked repository to the main WarpSQL repository.
+
+## Development with GitHub Codespaces
+
+You can use GitHub Codespaces to develop this project in the cloud.
+
+• Click on the "Code" button.
+
+• Select "Open with Codespaces" from the dropdown menu.
+
+• Choose the appropriate Codespace configuration.
+
+• Wait for the environment to be provisioned.
+
+Once the environment is ready, you can start working on the project.
+
+Make your desired changes or additions.
+Test your changes and ensure they meet the project's guidelines.
+Commit and push your changes to your forked repository.
+Create a pull request from your forked repository to the main WarpSQL repository.
+We welcome contributions from the community and appreciate your support in improving WarpSQL!
+
+Install the project dependencies by running the following command in the terminal:
+
+```pip install -r requirements.txt```
