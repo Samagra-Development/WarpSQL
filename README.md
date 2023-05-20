@@ -123,7 +123,8 @@ Before merging any contributions or changes, it's essential to ensure that the c
 
 • Once the CI build is successful, you can proceed with merging your changes into the main WarpSQL repository.
 
-## Publish the Project
+## Publish the Project ![](https://img.shields.io/badge/Publish-IconName-green)
+
 
 To publish the WarpSQL project, follow the guidelines below:
 
