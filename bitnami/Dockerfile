@@ -123,9 +123,6 @@ RUN set -ex \
         /var/lib/apt/lists/* \
         /tmp/*               \
         /var/tmp/* 
-    # \
-    # # Update shared_preload_libraries
-    # && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'citus,timescaledb'/g" /opt/bitnami/postgresql/conf/postgresql.conf
     
 # Add PostGIS Extension
 ARG POSTGIS_MAJOR
@@ -145,6 +142,7 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
+# Install Zombodb extension
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main 15" >> /etc/apt/sources.list.d/pgdg.list \
@@ -181,12 +179,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
 
 RUN git clone https://github.com/zombodb/zombodb.git \
     && cd zombodb \
-    # && sed -i 's/pgrx = "=0.8.3"/pgrx = "=0.8.3"/' Cargo.toml \
     && export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release
-
-
-#0 166.5 /.cargo/registry/src/github.com-1ecc6299db9ec823/cargo-pgrx-0.9.0/Cargo.toml
-#0 166.5 /.cargo/registry/src/github.com-1ecc6299db9ec823/pgrx-pg-config-0.9.0/Cargo.toml
 
 USER 1001
 
