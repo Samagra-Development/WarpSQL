@@ -142,13 +142,11 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
-# Install Zombodb extension
+# Install zombodb extension
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main 15" >> /etc/apt/sources.list.d/pgdg.list \
     && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list \
     && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" >> /etc/apt/sources.list \
-    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 \
     && apt update \
@@ -168,16 +166,14 @@ RUN apt-get update -y -qq --fix-missing \
 	&& ./configure  --with-openssl-dir=/usr/include/openssl-1.0 \
 	&& make -j64 \
 	&& make install \
-    && gem install --no-document fpm 
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && gem install --no-document fpm \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && export PATH="/.cargo/bin:$PATH" \
     && export PGRX_HOME="/.pgrx/" \
     && mkdir -p $PGRX_HOME \
     && cargo install cargo-pgrx --version 0.8.3 \
-    && cargo pgrx init --pg15=/opt/bitnami/postgresql/bin/pg_config
-
-RUN git clone https://github.com/zombodb/zombodb.git \
+    && cargo pgrx init --pg${PG_MAJOR}=/opt/bitnami/postgresql/bin/pg_config \
+    && git clone https://github.com/zombodb/zombodb.git \
     && cd zombodb \
     && export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release
 
