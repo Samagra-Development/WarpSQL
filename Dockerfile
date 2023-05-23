@@ -249,7 +249,7 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
     && gem install --no-document fpm \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
     && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx \
+    && cargo install cargo-pgrx --version 0.8.3 \
     && cargo pgrx init --${PG_VER}=$(which pg_config) \
     && git clone https://github.com/zombodb/zombodb.git \
     && cd ./zombodb \
