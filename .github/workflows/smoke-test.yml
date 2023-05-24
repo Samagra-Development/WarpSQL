@@ -74,6 +74,8 @@ jobs:
               psql -c "CREATE EXTENSION zombodb;"
               psql -c "SELECT * FROM pg_extension WHERE extname = 'zombodb';"
 
+              psql -c "CREATE EXTENSION zombodb;"
+
               break
             fi
             sleep 1
