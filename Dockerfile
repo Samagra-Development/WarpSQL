@@ -28,11 +28,12 @@ RUN rm -f $(pg_config --sharedir)/extension/timescaledb*mock*.sql \
 ############################
 # Now build image and copy in tools
 ############################
-ARG PG_VERSION
-FROM postgres:${PG_VERSION}-alpine
-ARG OSS_ONLY
+FROM postgres:latest
 
 LABEL maintainer="Timescale https://www.timescale.com"
+
+# Create a directory for old versions if it doesn't exist
+RUN mkdir -p /usr/local/lib/postgresql
 
 COPY docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/
 COPY --from=tools /go/bin/* /usr/local/bin/
