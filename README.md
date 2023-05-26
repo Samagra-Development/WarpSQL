@@ -54,3 +54,4 @@ Get started with WarpSQL today and experience the convenience of a comprehensive
 
 ## Contribution
 
+You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
