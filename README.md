@@ -70,3 +70,7 @@ Click the "Open in Gitpod" button above or use the following link:[Open in Gitpo
 • Make your desired changes or additions.
 
 • Test your changes and ensure they meet the project's guidelines.
+
+• Commit and push your changes to your forked repository.
+
+• Create a pull request from your forked repository to the main WarpSQL repository.
