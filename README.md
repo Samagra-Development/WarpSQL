@@ -101,3 +101,19 @@ We welcome contributions from the community and appreciate your support in impro
 Install the project dependencies by running the following command in the terminal:
 
 ```pip install -r requirements.txt```
+
+## Ensure CI passes ![](https://img.shields.io/badge/CI-Passing-brightgreen)
+
+
+Before merging any contributions or changes, it's essential to ensure that the continuous integration (CI) tests pass successfully. CI helps maintain code quality standards and prevents the introduction of regressions. To ensure a smooth integration process, follow these steps:
+
+• Make your desired changes or additions to the codebase.
+
+• Run the relevant tests locally to verify that your changes are functioning as expected.
+
+• Push your changes to the branch you're working on.
+
+• The CI system will automatically run tests and checks on your code.
+
+• Monitor the CI build status to ensure that all tests pass successfully.
+
