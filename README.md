@@ -48,3 +48,9 @@ By utilizing WarpSQL, you can benefit from the following:
 • Seamless integration: WarpSQL includes popular extensions like PgVector, TimescaleDB, Citus, and PostGIS, allowing you to leverage their functionality seamlessly.
 
 • Enhanced performance: The included extensions are carefully selected to optimize database performance, enabling you to work efficiently with large datasets.
+
+• Extensibility: While WarpSQL already supports a range of extensions, it aims to expand its offerings to include even more powerful tools in the future, such as ZomboDB, PLV8, and Pg Repack.
+Get started with WarpSQL today and experience the convenience of a comprehensive Postgres solution.
+
+## Contribution
+
