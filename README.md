@@ -122,3 +122,13 @@ Before merging any contributions or changes, it's essential to ensure that the c
 • Repeat steps 3-6 until the CI build passes successfully.
 
 • Once the CI build is successful, you can proceed with merging your changes into the main WarpSQL repository.
+
+
+## Publish the Project ![](https://img.shields.io/badge/Publish-IconName-green)
+
+
+To publish the WarpSQL project, follow the guidelines below:
+
+• Document the release process: Provide clear instructions on how to release new versions of the project. This may include steps to follow, release branches or tags, and any necessary checks or validations.
+
+• Versioning conventions: Define the versioning scheme used for the project. It could be semantic versioning (e.g., MAJOR.MINOR.PATCH) or any other convention that aligns with the project's needs.
