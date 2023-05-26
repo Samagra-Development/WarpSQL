@@ -38,3 +38,13 @@ services:
       POSTGRES_USER: warpSQLUser
       POSTGRES_PASSWORD: warpSQLPass
 ```
+
+WarpSQL is a powerful solution that provides opinionated extensions to Postgres, conveniently packaged as a single Docker deployment. It eliminates the need to install multiple separate databases by offering a comprehensive set of features in one place (although not everything, as some features might not be included).
+
+By utilizing WarpSQL, you can benefit from the following:
+
+• Simplified setup: With WarpSQL, you can have all the necessary extensions for your Postgres database in one go, saving you time and effort.
+
+• Seamless integration: WarpSQL includes popular extensions like PgVector, TimescaleDB, Citus, and PostGIS, allowing you to leverage their functionality seamlessly.
+
+• Enhanced performance: The included extensions are carefully selected to optimize database performance, enabling you to work efficiently with large datasets.
