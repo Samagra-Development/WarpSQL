@@ -87,9 +87,9 @@ RUN apk add --no-cache --virtual .build-deps \
                 krb5-dev \
                 libc-dev \
                 llvm15 \
-                clang \
                 make \
                 cmake \
+                clang15 \
                 util-linux-dev \
                 && git clone --branch v0.4.1 https://github.com/pgvector/pgvector.git \
                 && cd /pgvector \
@@ -141,8 +141,8 @@ RUN set -eux \
     &&  if   [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
             set -eux ; \
             export GEOS_ALPINE_VER=3.11 ; \
-            export GDAL_ALPINE_VER=3.5 ; \
-            export PROJ_ALPINE_VER=9.1 ; \
+            export GDAL_ALPINE_VER=3.6.4-r4 ; \
+            export PROJ_ALPINE_VER=9.2.0-r0 ; \
         elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
             set -eux ; \
             export GEOS_ALPINE_VER=3.8 ; \
@@ -184,6 +184,7 @@ RUN set -eux \
         autoconf \
         automake \
         clang-dev \
+        clang15 \
         cunit-dev \
         file \
         g++ \
@@ -194,6 +195,7 @@ RUN set -eux \
         libtool \
         libxml2-dev \
         llvm-dev \
+        llvm15 \
         make \
         pcre-dev \
         perl \
@@ -242,13 +244,12 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
 	util-linux-dev \
 	musl-dev \
 	openssl-dev \
-	clang-libs \
-    clang-dev \
+    clang15 \
 	tar \
     && gem install --no-document fpm \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
     && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx \
+    && cargo install cargo-pgrx --version 0.8.3 \
     && cargo pgrx init --${PG_VER}=$(which pg_config) \
     && git clone https://github.com/zombodb/zombodb.git \
     && cd ./zombodb \
