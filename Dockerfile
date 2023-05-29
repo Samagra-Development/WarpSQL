@@ -257,3 +257,17 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
     && cd .. \
     && rm -rf ./zombodb \
     && apk del .zombodb-build-deps
+
+# Install PLV8 dependencies
+RUN apk add --no-cache --virtual .plv8-deps \
+    curl \
+    python3 \
+    g++ \
+    make \
+    libc-dev \
+    perl \
+    openssl \
+    libtinfo5 \
+    build-essential \
+    ninja-build \
+    pkg-config 
