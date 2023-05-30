@@ -1,0 +1,10 @@
+{
+  "name": "warsql-devcontainer",
+  "image": "samagragovernance/postgres:latest-pg15",
+  "extensions": [
+    "ms-vscode-remote.vscode-remote-extensionpack"
+  ],
+  "settings": {},
+  "forwardPorts": [5432],
+  "postCreateCommand": "pip install -r requirements.txt"
+}
