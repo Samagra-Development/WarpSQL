@@ -5,10 +5,6 @@ Opinionated extensions to Postgres packaged as a single docker deployment. Why i
 
 Certified as Indie Hacker's best friend!!!
 
-### Test on GitPod
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
-
-
 ### Current and future supported extensions
 
 - [x] [PgVector](https://github.com/pgvector/pgvector)
