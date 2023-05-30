@@ -59,7 +59,6 @@ Click the "Open in Gitpod" button above or use the following link:[Open in Gitpo
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
 
-
 - Wait for the Gitpod environment to be created and initialized.
 - Once the environment is ready, you can start working on the project.
 - Make your desired changes or additions.
@@ -67,7 +66,7 @@ Click the "Open in Gitpod" button above or use the following link:[Open in Gitpo
 - Commit and push your changes to your forked repository.
 - Create a pull request from your forked repository to the main WarpSQL repository.
 
-### Development with GitHub Codespaces
+### GitHub Codespaces
 
 You can use GitHub Codespaces to develop this project in the cloud.
 
@@ -91,7 +90,6 @@ Install the project dependencies by running the following command in the termina
 ```pip install -r requirements.txt```
 
 ### Ensure CI passes ![](https://img.shields.io/badge/CI-Passing-brightgreen)
-
 
 Before merging any contributions or changes, it's essential to ensure that the continuous integration (CI) tests pass successfully. CI helps maintain code quality standards and prevents the introduction of regressions. To ensure a smooth integration process, follow these steps:
 
