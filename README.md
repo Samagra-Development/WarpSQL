@@ -80,11 +80,11 @@ You can use GitHub Codespaces to develop this project in the cloud.
 
 Once the environment is ready, you can start working on the project.
 
-Make your desired changes or additions.
-Test your changes and ensure they meet the project's guidelines.
-Commit and push your changes to your forked repository.
-Create a pull request from your forked repository to the main WarpSQL repository.
-We welcome contributions from the community and appreciate your support in improving WarpSQL!
+- Make your desired changes or additions.
+- Test your changes and ensure they meet the project's guidelines.
+- Commit and push your changes to your forked repository.
+- Create a pull request from your forked repository to the main WarpSQL repository.
+- We welcome contributions from the community and appreciate your support in improving WarpSQL!
 
 Install the project dependencies by running the following command in the terminal:
 
