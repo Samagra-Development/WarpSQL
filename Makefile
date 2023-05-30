@@ -5,6 +5,7 @@ ORG=samagragovernance
 PG_VER=pg15
 CITUS_VERSION="11.2.0"
 POSTGIS_VERSION=3.3.2
+PG_REPACK_VERSION = 1.4.8
 POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b
 PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
 TS_VERSION=main
@@ -57,7 +58,7 @@ default: image
 	touch .build_$(TS_VERSION)_$(PG_VER)_oss
 
 .build_$(TS_VERSION)_$(PG_VER): Dockerfile
-	docker build --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
+	docker build --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
 	touch .build_$(TS_VERSION)_$(PG_VER)
 
 image: .build_$(TS_VERSION)_$(PG_VER)
