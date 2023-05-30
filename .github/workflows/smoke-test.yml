@@ -71,6 +71,9 @@ jobs:
               psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
               psql -c "SELECT * FROM test_geometry_table;"
 
+              psql -c "CREATE EXTENSION zombodb;"
+              psql -c "SELECT * FROM pg_extension WHERE extname = 'zombodb';"
+
               break
             fi
             sleep 1
