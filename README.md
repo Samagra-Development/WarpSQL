@@ -97,12 +97,18 @@ Before merging any contributions or changes, it's essential to ensure that the c
 - Repeat steps 3-6 until the CI build passes successfully.
 - Once the CI build is successful, you can proceed with merging your changes into the main WarpSQL repository.
 
-## Contributors
+## Maintainers
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
-
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><img src="https://avatars.githubusercontent.com/u/64846852?v=4?s=100" width="100px;" alt="Jayanth Kumar"/><br /><sub><b>Jayanth Kumar</b></sub></a><br /><a href="https://github.com/all-contributors/all-contributors/commits?author=jayanth-kumar-morem" title="Code">💻</a></td>
+    </tr>
+  </tbody>
+</table>
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
