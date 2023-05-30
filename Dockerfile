@@ -268,7 +268,6 @@ RUN set -eux \
         zlib-dev \ 
         make \
         clang15 \
-	# coreutils \
         gawk \
         llvm15 \
         gcc \
