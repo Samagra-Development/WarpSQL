@@ -96,3 +96,14 @@ Before merging any contributions or changes, it's essential to ensure that the c
 - If the CI build fails, review the error messages and make the necessary fixes.
 - Repeat steps 3-6 until the CI build passes successfully.
 - Once the CI build is successful, you can proceed with merging your changes into the main WarpSQL repository.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
