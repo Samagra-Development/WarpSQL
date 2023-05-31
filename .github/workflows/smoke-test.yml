@@ -77,7 +77,7 @@ jobs:
               echo "Test pg_repack Extension"
               psql -c "CREATE EXTENSION pg_repack;"
               psql -c "select repack.version(), repack.version_sql();"
-              pg_repack --version 
+              /usr/local/bin/pg_repack --version 
               break
             fi
             sleep 1
