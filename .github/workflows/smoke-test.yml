@@ -73,7 +73,10 @@ jobs:
 
               psql -c "CREATE EXTENSION zombodb;"
               psql -c "SELECT * FROM pg_extension WHERE extname = 'zombodb';"
-
+              
+              echo "Test pg_repack Extension"
+              psql -c "CREATE EXTENSION pg_repack;"
+              psql -c "select repack.version(), repack.version_sql();"
               break
             fi
             sleep 1
