@@ -188,7 +188,6 @@ RUN apt-get update \
     && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
     && make \
     && make install \
-
 # clean 
     && cd / \
     && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
