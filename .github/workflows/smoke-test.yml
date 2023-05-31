@@ -77,6 +77,10 @@ jobs:
               echo "Test pg_repack Extension"
               psql -c "CREATE EXTENSION pg_repack;"
               psql -c "select repack.version(), repack.version_sql();"
+
+              echo "Test pgautofailover Extension"
+              psql -c "CREATE EXTENSION pgautofailover CASCADE;"
+              psql -c "SELECT pgautofailover.formation_settings();"
               break
             fi
             sleep 1

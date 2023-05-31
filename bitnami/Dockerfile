@@ -171,6 +171,41 @@ RUN apt-get update \
         /tmp/*               \
         /var/tmp/* 
 
+# Adding pgautofailover
+ARG PG_AUTO_FAILOVER_VERSION
+RUN apt-get update \
+    && apt-get install -y  unzip \
+        build-essential \
+        liblz4-dev \
+        zlib1g-dev \
+        libedit-dev \
+        libssl-dev \
+        wget \
+# build pg_auto_failover
+    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
+    && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
+    && ls -alh /tmp \
+    && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
+    && make \
+    && make install \
+
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
+    && apt-get autoremove --purge -y \
+        unzip \
+        build-essential \
+        liblz4-dev \
+        zlib1g-dev \
+        libedit-dev \
+        libssl-dev \
+        wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 # Install zombodb extension
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
