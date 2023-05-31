@@ -71,8 +71,9 @@ jobs:
               psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
               psql -c "SELECT * FROM test_geometry_table;"
 
+              echo "Test zombodb Extension"
               psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT * FROM pg_extension WHERE extname = 'zombodb';"
+              psql -c "SELECT zdb.internal_version();"
               
               echo "Test pg_repack Extension"
               psql -c "CREATE EXTENSION pg_repack;"
