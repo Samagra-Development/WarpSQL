@@ -72,7 +72,7 @@ jobs:
               psql -c "SELECT * FROM test_geometry_table;"
 
               psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT * FROM pg_extension WHERE extname = 'zombodb';"
+              psql -c "SELECT zdb.internal_version();"
 
               break
             fi
