@@ -74,7 +74,7 @@ RUN set -ex \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
 
 # Adding PG Vector
 
@@ -309,8 +309,6 @@ RUN set -eux \
     && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
     && make \
     && make install \
-    && sed -i "s/\(shared_preload_libraries = '[^']*\)/\1,pgautofailover/"  /usr/local/share/postgresql/postgresql.conf.sample \
-
 # clean 
     && cd / \
     && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
