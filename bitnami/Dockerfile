@@ -205,6 +205,39 @@ RUN apt-get update \
         /tmp/*               \
         /var/tmp/* 
 
+## Adding postgresql-hll
+ARG POSTGRES_HLL_VERSION
+RUN apt-get update \
+    && apt-get install -y  unzip \
+        build-essential \
+        liblz4-dev \
+        zlib1g-dev \
+        libedit-dev \
+        libssl-dev \
+        wget \
+# build postgresql-hll
+    && wget  -O /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip "https://github.com/citusdata/postgresql-hll/archive/refs/tags/v${POSTGRES_HLL_VERSION}.zip" \
+    && unzip  /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip -d /tmp \
+    && cd /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
+    && apt-get autoremove --purge -y \
+        unzip \
+        build-essential \
+        liblz4-dev \
+        zlib1g-dev \
+        libedit-dev \
+        libssl-dev \
+        wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 # Install zombodb extension
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
