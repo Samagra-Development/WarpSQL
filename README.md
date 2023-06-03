@@ -16,6 +16,15 @@ Certified as Indie Hacker's best friend!!!
 
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
+## AWS S3 Integration
+
+WarpSQL also supports seamless integration with AWS S3, allowing you to store and retrieve data from your S3 buckets directly within your Postgres database. This integration offers flexibility and scalability for handling large datasets and enables efficient data transfer between your application and AWS S3.
+
+To configure the AWS S3 integration with WarpSQL, follow these steps:
+
+
+
+
 ### Usage with Compose
 
 ```yaml
