@@ -27,6 +27,9 @@ To configure the AWS S3 integration with WarpSQL, follow these steps:
 
 2- Install the AWS Command Line Interface (CLI) on your local machine.
 
+3- Configure the AWS CLI by running the following command and providing your IAM user's access key ID and secret access key:
+
+
 
 
 
