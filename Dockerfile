@@ -109,3 +109,131 @@ RUN apk add --no-cache --virtual .build-deps \
                 && make \
                 && make install
 
+
+## Adding Citus
+
+# Install Citus dependencies
+RUN apk add --no-cache --virtual .citus-deps \
+    curl \
+    jq
+
+# Install Citus
+ARG CITUS_VERSION
+RUN set -ex \
+    && apk add --no-cache --virtual .citus-build-deps \
+        gcc \
+        libc-dev \
+        make \
+        curl-dev \
+        lz4-dev \
+        zstd-dev \
+        clang \
+        krb5-dev \
+        icu-dev \
+        libxslt-dev \
+        libxml2-dev \
+        llvm15-dev \
+    && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/citus.tar.gz \
+    && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
+    && cd /tmp/citus-${CITUS_VERSION} \
+    && PATH="/usr/local/pgsql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
+    && apk del .citus-deps .citus-build-deps
+
+
+ARG POSTGIS_VERSION
+ARG POSTGIS_SHA256
+
+RUN set -eux \
+    \
+    &&  if   [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
+            set -eux ; \
+            export GEOS_ALPINE_VER=3.11 ; \
+            export GDAL_ALPINE_VER=3.6.4-r4 ; \
+            export PROJ_ALPINE_VER=9.2.0-r0 ; \
+        elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
+            set -eux ; \
+            export GEOS_ALPINE_VER=3.8 ; \
+            export GDAL_ALPINE_VER=3.2 ; \
+            export PROJ_ALPINE_VER=7.2 ; \
+            \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.14/main'      >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.14/community' >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.13/main'      >> /etc/apk/repositories ; \
+            echo 'https://dl-cdn.alpinelinux.org/alpine/v3.13/community' >> /etc/apk/repositories ; \
+            \
+        else \
+            set -eux ; \
+            echo ".... unknown \$POSTGIS_VERSION ...." ; \
+            exit 1 ; \
+        fi \
+    \
+    && apk add --no-cache --virtual .fetch-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
+    && apk add --no-cache --virtual .build-deps \
+        \
+        gdal-dev~=${GDAL_ALPINE_VER} \
+        geos-dev~=${GEOS_ALPINE_VER} \
+        proj-dev~=${PROJ_ALPINE_VER} \
+        \
+        autoconf \
+        automake \
+        clang-dev \
+        clang15 \
+        cunit-dev \
+        file \
+        g++ \
+        gcc \
+        gettext-dev \
+        git \
+        json-c-dev \
+        libtool \
+        libxml2-dev \
+        llvm-dev \
+        llvm15 \
+        make \
+        pcre-dev \
+        perl \
+        protobuf-c-dev \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
+    && ./autogen.sh \
+    && ./configure \
+        --with-pcredir="$(pcre-config --prefix)" \
+    && make -j$(nproc) \
+    && make install \
+    \
+# add .postgis-rundeps
+    && apk add --no-cache --virtual .postgis-rundeps \
+        \
+        gdal~=${GDAL_ALPINE_VER} \
+        geos~=${GEOS_ALPINE_VER} \
+        proj~=${PROJ_ALPINE_VER} \
+        \
+        json-c \
+        libstdc++ \
+        pcre \
+        protobuf-c \
+        \
+        ca-certificates \
