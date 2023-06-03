@@ -30,6 +30,22 @@ To configure the AWS S3 integration with WarpSQL, follow these steps:
 3- Configure the AWS CLI by running the following command and providing your IAM user's access key ID and secret access key:
 
 
+4- In the `docker-compose.yml` file, update the `extension-tracker` service with the following configuration:
+
+```yaml
+extension-tracker:
+  image: minio/mc
+  volumes:
+    - ./data:/data
+  command: mc <your-command-here>  # Replace `<your-command-here>` with the appropriate `mc` command for interacting with S3.
+  depends_on:
+    - "timescaledb"
+  restart: always
+  environment:
+    - AWS_ACCESS_KEY_ID=<your-access-key-id>  # Replace `<your-access-key-id>` with your IAM user's access key ID.
+    - AWS_SECRET_ACCESS_KEY=<your-secret-access-key>  # Replace `<your-secret-access-key>` with your IAM user's secret access key.
+    - AWS_DEFAULT_REGION=<your-aws-region>  # Replace `<your-aws-region>` with your desired AWS region.
+
 
 
 
