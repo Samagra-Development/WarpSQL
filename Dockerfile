@@ -38,3 +38,74 @@ COPY docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/
 COPY --from=tools /go/bin/* /usr/local/bin/
 COPY --from=oldversions /usr/local/lib/postgresql/timescaledb-*.so /usr/local/lib/postgresql/
 COPY --from=oldversions /usr/local/share/postgresql/extension/timescaledb--*.sql /usr/local/share/postgresql/extension/
+
+
+# Add the extension tracker Dockerfile
+FROM minio/mc
+
+VOLUME /data
+CMD mc mb my-bucket
+
+ENV AWS_ACCESS_KEY_ID=AKIAXEZBKDXXUSW2IVOT
+ENV AWS_SECRET_ACCESS_KEY=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
+ENV AWS_DEFAULT_REGION=Global
+
+
+ARG TS_VERSION
+RUN set -ex \
+    && apk add libssl1.1 \
+    && apk add --no-cache --virtual .fetch-deps \
+                ca-certificates \
+                git \
+                openssl \
+                openssl-dev \
+                tar \
+    && mkdir -p /build/ \
+    && git clone https://github.com/timescale/timescaledb /build/timescaledb \
+    \
+    && apk add --no-cache --virtual .build-deps \
+                coreutils \
+                dpkg-dev dpkg \
+                gcc \
+                krb5-dev \
+                libc-dev \
+                make \
+                cmake \
+                util-linux-dev \
+    \
+    # Build current version \
+    && cd /build/timescaledb && rm -fr build \
+    && git checkout ${TS_VERSION} \
+    && ./bootstrap -DCMAKE_BUILD_TYPE=RelWithDebInfo -DREGRESS_CHECKS=OFF -DTAP_CHECKS=OFF -DGENERATE_DOWNGRADE_SCRIPT=ON -DWARNINGS_AS_ERRORS=OFF -DPROJECT_INSTALL_METHOD="docker"${OSS_ONLY} \
+    && cd build && make install \
+    && cd ~ \
+    \
+    && if [ "${OSS_ONLY}" != "" ]; then rm -f $(pg_config --pkglibdir)/timescaledb-tsl-*.so; fi \
+    && apk del .fetch-deps .build-deps \
+    && rm -rf /build \
+    && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
+
+# Update to shared_preload_libraries
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
+
+# Adding PG Vector
+
+RUN cd /tmp
+RUN apk add --no-cache --virtual .build-deps \
+                coreutils \
+                dpkg-dev dpkg \
+                gcc \
+                git \
+                krb5-dev \
+                libc-dev \
+                llvm15 \
+                make \
+                cmake \
+                clang15 \
+                util-linux-dev \
+                && git clone --branch v0.4.1 https://github.com/pgvector/pgvector.git \
+                && cd /pgvector \
+                && ls \
+                && make \
+                && make install
+
