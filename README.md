@@ -49,8 +49,7 @@ extension-tracker:
 
 5- Start the WarpSQL containers using Docker Compose by running the following command:
 
-```docker-compose up -d
-```
+```docker-compose up -d```
 
 
 ### Usage with Compose
