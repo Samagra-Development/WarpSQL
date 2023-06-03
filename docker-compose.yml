@@ -42,6 +42,6 @@ extension-tracker:
       - "timescaledb"
     restart: always
     environment:
-      - AWS_ACCESS_KEY_ID=AKIAXEZBKDXXUSW2IVOT
-      - AWS_SECRET_ACCESS_KEY=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
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_DEFAULT_REGION=Global
