@@ -45,7 +45,9 @@ extension-tracker:
     - AWS_ACCESS_KEY_ID=<your-access-key-id>  # Replace `<your-access-key-id>` with your IAM user's access key ID.
     - AWS_SECRET_ACCESS_KEY=<your-secret-access-key>  # Replace `<your-secret-access-key>` with your IAM user's secret access key.
     - AWS_DEFAULT_REGION=<your-aws-region>  # Replace `<your-aws-region>` with your desired AWS region.
+```
 
+Start the WarpSQL containers using Docker Compose by running the following command:
 
 
 
