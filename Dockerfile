@@ -237,3 +237,92 @@ RUN set -eux \
         protobuf-c \
         \
         ca-certificates \
+# clean
+    && cd / \
+    && rm -rf /usr/src/postgis \
+    && apk del .fetch-deps .build-deps 
+
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+ARG PG_VER
+RUN apk add --no-cache --virtual .zombodb-build-deps \
+    git \
+	curl \
+	bash \
+	ruby-dev \
+	ruby-etc \
+	musl-dev \
+	make \
+	gcc \
+	coreutils \
+	util-linux-dev \
+	musl-dev \
+	openssl-dev \
+    clang15 \
+	tar \
+    && gem install --no-document fpm \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+    && PATH=$HOME/.cargo/bin:$PATH \
+    && cargo install cargo-pgrx --version 0.8.3 \
+    && cargo pgrx init --${PG_VER}=$(which pg_config) \
+    && git clone https://github.com/zombodb/zombodb.git \
+    && cd ./zombodb \
+    && cargo pgrx install --release \
+    && cd .. \
+    && rm -rf ./zombodb \
+    && apk del .zombodb-build-deps
+
+## Adding pg_repack
+ARG PG_REPACK_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_repack-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        clang15 \
+        gawk \
+        llvm15 \
+        gcc \
+        musl-dev \
+# build pg_repack
+    && wget  -O /tmp/pg_repack-${PG_REPACK_VERSION}.zip "https://api.pgxn.org/dist/pg_repack/${PG_REPACK_VERSION}/pg_repack-${PG_REPACK_VERSION}.zip" \
+    && unzip  /tmp/pg_repack-${PG_REPACK_VERSION}.zip -d /tmp \
+    && cd /tmp/pg_repack-${PG_REPACK_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_repack-${PG_REPACK_VERSION} /tmp/pg_repack.zip \
+    && apk del .pg_repack-build-deps 
+
+# Adding pgautofailover
+ARG PG_AUTO_FAILOVER_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_auto_failover-build-deps \
+        make \ 
+        gcc \
+        musl-dev \
+        krb5-dev \ 
+        openssl-dev \
+        clang15 \ 
+        ncurses-dev \
+        linux-headers \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \
+        libedit-dev \
+        libxml2-utils \
+        libxslt-dev \
+        llvm15 \
+# build pg_auto_failover
+    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
+    && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
+    && ls -alh /tmp \
+    && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
+    && apk del .pg_auto_failover-build-deps
