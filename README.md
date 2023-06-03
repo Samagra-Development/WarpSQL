@@ -47,9 +47,10 @@ extension-tracker:
     - AWS_DEFAULT_REGION=<your-aws-region>  # Replace `<your-aws-region>` with your desired AWS region.
 ```
 
-Start the WarpSQL containers using Docker Compose by running the following command:
+5- Start the WarpSQL containers using Docker Compose by running the following command:
 
-
+```docker-compose up -d
+```
 
 
 ### Usage with Compose
