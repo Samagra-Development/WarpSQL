@@ -46,6 +46,11 @@ Get started with WarpSQL today and experience the convenience of a comprehensive
 
 ## AWS S3 Integration
 
+WarpSQL also supports seamless integration with AWS S3, allowing you to store and retrieve data from your S3 buckets directly within your Postgres database. This integration offers flexibility and scalability for handling large datasets and enables efficient data transfer between your application and AWS S3.
+
+To configure the AWS S3 integration with WarpSQL, follow these steps:
+
+
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
