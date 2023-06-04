@@ -56,6 +56,12 @@ To configure the AWS S3 integration with WarpSQL, follow these steps:
 2- Install the AWS Command Line Interface (CLI) on your local machine.
 
 
+3- Configure the AWS CLI by running the following command and providing your IAM user's access key ID and secret access key:
+
+
+4- In the `docker-compose.yml` file, update the `extension-tracker` service with the following configuration:
+
+
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
