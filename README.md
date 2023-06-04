@@ -61,6 +61,14 @@ To configure the AWS S3 integration with WarpSQL, follow these steps:
 
 4- In the `docker-compose.yml` file, update the `extension-tracker` service with the following configuration:
 
+```yaml
+extension-tracker:
+  image: minio/mc
+  volumes:
+    - ./data:/data
+  command: mc <your-command-here>  # Replace `<your-command-here>` with the appropriate `mc` command for interacting with S3.
+  depends_on:
+
 
 ## Contribution
 
