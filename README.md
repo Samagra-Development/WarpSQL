@@ -16,6 +16,42 @@ Certified as Indie Hacker's best friend!!!
 
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
+## AWS S3 Integration
+
+WarpSQL also supports seamless integration with AWS S3, allowing you to store and retrieve data from your S3 buckets directly within your Postgres database. This integration offers flexibility and scalability for handling large datasets and enables efficient data transfer between your application and AWS S3.
+
+To configure the AWS S3 integration with WarpSQL, follow these steps:
+
+
+1- Create an IAM user in your AWS account with the necessary permissions to access your S3 buckets. Make sure to note down the IAM user's access key ID and secret access key.
+
+2- Install the AWS Command Line Interface (CLI) on your local machine.
+
+3- Configure the AWS CLI by running the following command and providing your IAM user's access key ID and secret access key:
+
+
+4- In the `docker-compose.yml` file, update the `extension-tracker` service with the following configuration:
+
+```yaml
+extension-tracker:
+  image: minio/mc
+  volumes:
+    - ./data:/data
+  command: mc <your-command-here>  # Replace `<your-command-here>` with the appropriate `mc` command for interacting with S3.
+  depends_on:
+    - "timescaledb"
+  restart: always
+  environment:
+    - AWS_ACCESS_KEY_ID=<your-access-key-id>  # Replace `<your-access-key-id>` with your IAM user's access key ID.
+    - AWS_SECRET_ACCESS_KEY=<your-secret-access-key>  # Replace `<your-secret-access-key>` with your IAM user's secret access key.
+    - AWS_DEFAULT_REGION=<your-aws-region>  # Replace `<your-aws-region>` with your desired AWS region.
+```
+
+5- Start the WarpSQL containers using Docker Compose by running the following command:
+
+```docker-compose up -d```
+
+
 ### Usage with Compose
 
 ```yaml

@@ -39,6 +39,18 @@ COPY --from=tools /go/bin/* /usr/local/bin/
 COPY --from=oldversions /usr/local/lib/postgresql/timescaledb-*.so /usr/local/lib/postgresql/
 COPY --from=oldversions /usr/local/share/postgresql/extension/timescaledb--*.sql /usr/local/share/postgresql/extension/
 
+
+# Add the extension tracker Dockerfile
+FROM minio/mc
+
+VOLUME /data
+CMD mc mb my-bucket
+
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV AWS_DEFAULT_REGION=Global
+
+
 ARG TS_VERSION
 RUN set -ex \
     && apk add libssl1.1 \
@@ -96,6 +108,7 @@ RUN apk add --no-cache --virtual .build-deps \
                 && ls \
                 && make \
                 && make install
+
 
 ## Adding Citus
 
