@@ -61,6 +61,16 @@ COPY --from=oldversions /opt/bitnami/postgresql/lib/.emptyfile /opt/bitnami/post
 COPY --from=oldversions /opt/bitnami/postgresql/share/extension/.emptyfile /opt/bitnami/postgresql/share/extension/timescaledb--*.sql /opt/bitnami/postgresql/share/extension/
 COPY bitnami/timescaledb-bitnami-entrypoint.sh /opt/bitnami/scripts/postgresql/
 
+#Add the extension tracker Dockerfile for AWS S3
+FROM minio/mc
+
+VOLUME /data
+CMD mc mb my-bucket
+
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+
 USER 0
 ARG TS_VERSION
 RUN set -ex \
