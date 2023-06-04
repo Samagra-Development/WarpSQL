@@ -51,6 +51,11 @@ WarpSQL also supports seamless integration with AWS S3, allowing you to store an
 To configure the AWS S3 integration with WarpSQL, follow these steps:
 
 
+1- Create an IAM user in your AWS account with the necessary permissions to access your S3 buckets. Make sure to note down the IAM user's access key ID and secret access key.
+
+2- Install the AWS Command Line Interface (CLI) on your local machine.
+
+
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
