@@ -11,6 +11,7 @@ services:
     environment:
       POSTGRES_USER: timescaledb
       POSTGRES_PASSWORD: postgrespassword
+      PG_MAX_CONNECTIONS: 10
 
   graphql-engine:
     image: hasura/graphql-engine:latest
