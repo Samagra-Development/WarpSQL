@@ -30,6 +30,10 @@ default: image
 	docker build -f ./Dockerfile --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION)  --build-arg POSTGIS_MAJOR=$(POSTGIS_MAJOR) --build-arg PG_MAJOR=$(PG_MAJOR) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) $(TAG)  ..
 	touch .build_$(TS_VERSION)_$(PG_VER)-bitnami
 
+build-docker-cache: Dockerfile
+	docker buildx create --use --driver=docker-container
+	docker buildx  build  --progress=plain --load --cache-to "type=gha,mode=max" --cache-from type=gha --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
+	touch .build_$(TS_VERSION)_$(PG_VER) 
 image: .build_$(TS_VERSION)_$(PG_VER)
 
 push: image
@@ -41,4 +45,4 @@ push: image
 clean:
 	rm -f *~ .build_*
 
-.PHONY: default image push clean
+.PHONY: default image push clean build-docker-cache
