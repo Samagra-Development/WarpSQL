@@ -18,7 +18,7 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
 ### Usage with Compose
 
-```yaml
+```yam
 version: '3.6'
 services:
   warpsql:
