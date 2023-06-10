@@ -142,7 +142,7 @@ RUN set -eux \
             set -eux ; \
             export GEOS_ALPINE_VER=3.11 ; \
             export GDAL_ALPINE_VER=3.6.4-r4 ; \
-            export PROJ_ALPINE_VER=9.2.0-r0 ; \
+            export PROJ_ALPINE_VER=9.2 ; \
         elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
             set -eux ; \
             export GEOS_ALPINE_VER=3.8 ; \
