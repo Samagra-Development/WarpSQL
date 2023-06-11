@@ -85,6 +85,10 @@ jobs:
               echo "Test pgautofailover Extension"
               psql -c "CREATE EXTENSION pgautofailover CASCADE;"
               psql -c "SELECT pgautofailover.formation_settings();"
+              
+              echo "Test HyperLogLog Extension"
+              psql -c "CREATE EXTENSION hll;"
+              psql -c "select hll_hash_text('hello world');"
               break
             fi
             sleep 1

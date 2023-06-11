@@ -249,7 +249,7 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
     && gem install --no-document fpm \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
     && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx --version 0.8.3 \
+    && cargo install cargo-pgrx --version 0.9.3 \
     && cargo pgrx init --${PG_VER}=$(which pg_config) \
     && git clone https://github.com/zombodb/zombodb.git \
     && cd ./zombodb \
@@ -313,3 +313,31 @@ RUN set -eux \
     && cd / \
     && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
     && apk del .pg_auto_failover-build-deps
+
+
+## Adding postgresql-hll
+ARG POSTGRES_HLL_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .postgresql-hll-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        git \
+        clang15 \
+        gawk \
+        llvm15 \
+        g++ \
+        musl-dev \
+# build postgresql-hll
+    && wget  -O /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip "https://github.com/citusdata/postgresql-hll/archive/refs/tags/v${POSTGRES_HLL_VERSION}.zip" \
+    && unzip  /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip -d /tmp \
+    && cd /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
+    && apk del .postgresql-hll-build-deps 
+
