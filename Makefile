@@ -26,16 +26,16 @@ TAG=-t $(TAG_VERSION) $(if $(BETA),,-t $(TAG_LATEST))
 TAG_OSS=-t $(TAG_VERSION)-oss $(if $(BETA),,-t $(TAG_LATEST)-oss)
 
 DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
-					--build-arg TS_VERSION=$(TS_VERSION) \
-					--build-arg PREV_IMAGE=$(PREV_IMAGE) \
-					--build-arg CITUS_VERSION=$(CITUS_VERSION) \
-					--build-arg PG_VER=$(PG_VER) \
-					--build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
-					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
-					--build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) \
-					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
-					--build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  \
-					--build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
+		    --build-arg TS_VERSION=$(TS_VERSION) \
+		    --build-arg PREV_IMAGE=$(PREV_IMAGE) \
+		    --build-arg CITUS_VERSION=$(CITUS_VERSION) \
+		    --build-arg PG_VER=$(PG_VER) \
+		    --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
+		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+		    --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) \
+		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+	            --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  \
+		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
 
 default: image
 

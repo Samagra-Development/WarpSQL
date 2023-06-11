@@ -24,15 +24,15 @@ TAG_LATEST=$(ORG)/$(NAME):latest-$(PG_VER)-bitnami
 TAG=-t $(TAG_VERSION) $(if $(BETA),,-t $(TAG_LATEST))
 
 DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
-					--build-arg TS_VERSION=$(TS_VERSION) \
-					--build-arg PREV_IMAGE=$(PREV_IMAGE) \
-					--build-arg CITUS_VERSION=$(CITUS_VERSION) \
-					--build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
-					--build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION)  \
-					--build-arg POSTGIS_MAJOR=$(POSTGIS_MAJOR) \
-					--build-arg PG_MAJOR=$(PG_MAJOR) \
-					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
-					--build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
+		    --build-arg TS_VERSION=$(TS_VERSION) \
+		    --build-arg PREV_IMAGE=$(PREV_IMAGE) \
+		    --build-arg CITUS_VERSION=$(CITUS_VERSION) \
+		    --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
+		    --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION)  \
+		    --build-arg POSTGIS_MAJOR=$(POSTGIS_MAJOR) \
+		    --build-arg PG_MAJOR=$(PG_MAJOR) \
+		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
 
 default: image
 
