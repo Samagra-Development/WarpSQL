@@ -24,6 +24,17 @@ TAG_LATEST=$(ORG)/$(NAME):latest-$(PG_VER)
 TAG=-t $(TAG_VERSION) $(if $(BETA),,-t $(TAG_LATEST))
 TAG_OSS=-t $(TAG_VERSION)-oss $(if $(BETA),,-t $(TAG_LATEST)-oss)
 
+DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
+					--build-arg TS_VERSION=$(TS_VERSION) \
+					--build-arg PREV_IMAGE=$(PREV_IMAGE) \
+					--build-arg CITUS_VERSION=$(CITUS_VERSION) \
+					--build-arg PG_VER=$(PG_VER) \
+					--build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
+					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+					--build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) \
+					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+					--build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  
+
 default: image
 
 .multi_$(TS_VERSION)_$(PG_VER)_oss: Dockerfile
@@ -59,12 +70,12 @@ default: image
 	touch .build_$(TS_VERSION)_$(PG_VER)_oss
 
 .build_$(TS_VERSION)_$(PG_VER): Dockerfile
-	docker build --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
+	docker build $(DOCKER_BUILD_ARGS) $(TAG) .
 	touch .build_$(TS_VERSION)_$(PG_VER)
 
 build-docker-cache: Dockerfile
 	docker buildx create --use --driver=docker-container
-	docker buildx  build  --progress=plain --load --cache-to "type=gha,mode=max" --cache-from type=gha --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
+	docker buildx  build  --progress=plain --load --cache-to "type=gha,mode=max" --cache-from type=gha  $(DOCKER_BUILD_ARGS) $(TAG) .
 	touch .build_$(TS_VERSION)_$(PG_VER)
 
 image: .build_$(TS_VERSION)_$(PG_VER)
