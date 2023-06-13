@@ -25,6 +25,14 @@ TAG_LATEST=$(ORG)/$(NAME):latest-$(PG_VER)
 TAG=-t $(TAG_VERSION) $(if $(BETA),,-t $(TAG_LATEST))
 TAG_OSS=-t $(TAG_VERSION)-oss $(if $(BETA),,-t $(TAG_LATEST)-oss)
 
+INCLUDE_PGVECTOR=true
+INCLUDE_CITUS=true
+INCLUDE_POSTGIS=true
+INCLUDE_ZOMBODB=true
+INCLUDE_PG_REPACK=true
+INCLUDE_PG_AUTO_FAILOVER=true
+INCLUDE_POSTGRES_HLL=true
+
 DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
 		    --build-arg TS_VERSION=$(TS_VERSION) \
 		    --build-arg PREV_IMAGE=$(PREV_IMAGE) \
@@ -35,7 +43,14 @@ DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
 		    --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) \
 		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
 	            --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  \
-		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
+		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION) \
+		    --build-arg INCLUDE_PGVECTOR=$(INCLUDE_PGVECTOR) \
+		    --build-arg INCLUDE_CITUS=$(INCLUDE_CITUS) \
+		    --build-arg INCLUDE_POSTGIS=$(INCLUDE_POSTGIS) \
+		    --build-arg INCLUDE_ZOMBODB=$(INCLUDE_ZOMBODB) \
+		    --build-arg INCLUDE_PG_REPACK=$(INCLUDE_PG_REPACK) \
+		    --build-arg INCLUDE_PG_AUTO_FAILOVER=$(INCLUDE_PG_AUTO_FAILOVER) \
+		    --build-arg INCLUDE_POSTGRES_HLL=$(INCLUDE_POSTGRES_HLL)
 
 default: image
 
@@ -72,6 +87,7 @@ default: image
 	touch .build_$(TS_VERSION)_$(PG_VER)_oss
 
 .build_$(TS_VERSION)_$(PG_VER): Dockerfile
+	echo "Building $(TAG)"
 	docker build $(DOCKER_BUILD_ARGS) $(TAG) .
 	touch .build_$(TS_VERSION)_$(PG_VER)
 

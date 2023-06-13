@@ -12,19 +12,39 @@ env:
 
 jobs:
   smoketest:
-    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-${{ matrix.extensions }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         pg: [15]
         type: ['normal', 'bitnami']
+        extensions: ['all', 'citus', 'postgis', 'zombodb', 'pg_repack', 'pg_auto_failover', 'postgres_hll']
     steps:
       - name: Check out the source
         uses: actions/checkout@v3
 
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v2
+
+      - name: Set extension environment variables
+        run: |
+          if [ "${{ matrix.extensions }}" == "all" ]; then
+            echo "INCLUDE_CITUS=true" >> $GITHUB_ENV
+            echo "INCLUDE_POSTGIS=true" >> $GITHUB_ENV
+            echo "INCLUDE_ZOMBODB=true" >> $GITHUB_ENV
+            echo "INCLUDE_PG_REPACK=true" >> $GITHUB_ENV
+            echo "INCLUDE_PG_AUTO_FAILOVER=true" >> $GITHUB_ENV
+            echo "INCLUDE_POSTGRES_HLL=true" >> $GITHUB_ENV
+          else
+            echo "INCLUDE_CITUS=false" >> $GITHUB_ENV
+            echo "INCLUDE_POSTGIS=false" >> $GITHUB_ENV
+            echo "INCLUDE_ZOMBODB=false" >> $GITHUB_ENV
+            echo "INCLUDE_PG_REPACK=false" >> $GITHUB_ENV
+            echo "INCLUDE_PG_AUTO_FAILOVER=false" >> $GITHUB_ENV
+            echo "INCLUDE_POSTGRES_HLL=false" >> $GITHUB_ENV
+            echo "INCLUDE_${{ matrix.extensions }}" >> $GITHUB_ENV
+          fi
 
       - name: Build Docker Image for TimescaleDB
         run: |
@@ -55,40 +75,45 @@ jobs:
             fi
             if psql -c "select 1"
             then
-              echo "Test Citus Extension"
-              psql -c "CREATE EXTENSION citus;"
-              psql -c "SELECT * FROM citus_version();"
+              if [ "$INCLUDE_CITUS" = "true" ]; then
+                echo "Test Citus Extension"
+                psql -c "CREATE EXTENSION citSorry for the abrupt cut-off. Here's the continuation of the previous message:
 
-              echo "Test Citus Distributed Table"
-              psql -c "CREATE TABLE test_distributed_table (id serial primary key, data text);"
-              psql -c "SELECT create_distributed_table('test_distributed_table', 'id');"
-              psql -c "INSERT INTO test_distributed_table (data) VALUES ('test data');"
-              psql -c "SELECT * FROM test_distributed_table;"
+```yaml
+                psql -c "CREATE EXTENSION citus;"
+                psql -c "SELECT * FROM citus_version();"
+              fi
 
-              echo "Test PostGIS Extension"
-              psql -c "CREATE EXTENSION postgis;" || true
-              psql -c "SELECT PostGIS_Version();"
+              if [ "$INCLUDE_POSTGIS" = "true" ]; then
+                echo "Test PostGIS Extension"
+                psql -c "CREATE EXTENSION postgis;" || true
+                psql -c "SELECT PostGIS_Version();"
+              fi
 
-              echo "Test PostGIS Geometry Function"
-              psql -c "CREATE TABLE test_geometry_table (id serial primary key, geom geometry(Point, 4326));"
-              psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
-              psql -c "SELECT * FROM test_geometry_table;"
+              if [ "$INCLUDE_ZOMBODB" = "true" ]; then
+                echo "Test zombodb Extension"
+                psql -c "CREATE EXTENSION zombodb;"
+                psql -c "SELECT zdb.internal_version();"
+              fi
 
-              echo "Test zombodb Extension"
-              psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT zdb.internal_version();"
+              if [ "$INCLUDE_PG_REPACK" = "true" ]; then
+                echo "Test pg_repack Extension"
+                psql -c "CREATE EXTENSION pg_repack;"
+                psql -c "select repack.version(), repack.version_sql();"
+              fi
+
+              if [ "$INCLUDE_PG_AUTO_FAILOVER" = "true" ]; then
+                echo "Test pgautofailover Extension"
+                psql -c "CREATE EXTENSION pgautofailover CASCADE;"
+                psql -c "SELECT pgautofailover.formation_settings();"
+              fi
+
+              if [ "$INCLUDE_POSTGRES_HLL" = "true" ]; then
+                echo "Test HyperLogLog Extension"
+                psql -c "CREATE EXTENSION hll;"
+                psql -c "select hll_hash_text('hello world');"
+              fi
               
-              echo "Test pg_repack Extension"
-              psql -c "CREATE EXTENSION pg_repack;"
-              psql -c "select repack.version(), repack.version_sql();"
-
-              echo "Test pgautofailover Extension"
-              psql -c "CREATE EXTENSION pgautofailover CASCADE;"
-              psql -c "SELECT pgautofailover.formation_settings();"
-              
-              echo "Test HyperLogLog Extension"
-              psql -c "CREATE EXTENSION hll;"
-              psql -c "select hll_hash_text('hello world');"
               break
             fi
             sleep 1

@@ -26,6 +26,17 @@ RUN rm -f $(pg_config --sharedir)/extension/timescaledb*mock*.sql \
     && if [ -f $(pg_config --sharedir)/extension/timescaledb--1*.sql ]; then rm -f $(ls -1 $(pg_config --sharedir)/extension/timescaledb--1*.sql | head -n -5); fi
 
 ############################
+# Args to check which extensions to include
+############################
+ARG INCLUDE_PGVECTOR
+ARG INCLUDE_CITUS
+ARG INCLUDE_POSTGIS
+ARG INCLUDE_ZOMBODB
+ARG INCLUDE_PG_REPACK
+ARG INCLUDE_PG_AUTO_FAILOVER
+ARG INCLUDE_POSTGRES_HLL
+
+############################
 # Now build image and copy in tools
 ############################
 ARG PG_VERSION
@@ -77,9 +88,8 @@ RUN set -ex \
 RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
 
 # Adding PG Vector
-
-RUN cd /tmp
-RUN apk add --no-cache --virtual .build-deps \
+RUN if [ "$INCLUDE_PGVECTOR" = "true" ]; then \
+    apk add --no-cache --virtual .build-deps \
                 coreutils \
                 dpkg-dev dpkg \
                 gcc \
@@ -95,18 +105,17 @@ RUN apk add --no-cache --virtual .build-deps \
                 && cd /pgvector \
                 && ls \
                 && make \
-                && make install
-
-## Adding Citus
-
-# Install Citus dependencies
-RUN apk add --no-cache --virtual .citus-deps \
-    curl \
-    jq
+                && make install; \
+    fi
 
 # Install Citus
 ARG CITUS_VERSION
-RUN set -ex \
+RUN if [ "$INCLUDE_CITUS" = "true" ]; then \
+# Install Citus dependencies
+    apk add --no-cache --virtual .citus-deps \
+        curl \
+        jq \
+    && set -ex \
     && apk add --no-cache --virtual .citus-build-deps \
         gcc \
         libc-dev \
@@ -130,13 +139,14 @@ RUN set -ex \
     && make install \
     && cd ~ \
     && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
-    && apk del .citus-deps .citus-build-deps
-
+    && apk del .citus-deps .citus-build-deps; \
+    fi
 
 ARG POSTGIS_VERSION
 ARG POSTGIS_SHA256
 
-RUN set -eux \
+RUN if [ "$INCLUDE_POSTGIS" = "true" ]; then \
+    set -eux \
     \
     &&  if   [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
             set -eux ; \
@@ -227,40 +237,44 @@ RUN set -eux \
 # clean
     && cd / \
     && rm -rf /usr/src/postgis \
-    && apk del .fetch-deps .build-deps 
+    && apk del .fetch-deps .build-deps ; \
+    fi
 
 ENV RUSTFLAGS="-C target-feature=-crt-static"
 ARG PG_VER
-RUN apk add --no-cache --virtual .zombodb-build-deps \
-    git \
-	curl \
-	bash \
-	ruby-dev \
-	ruby-etc \
-	musl-dev \
-	make \
-	gcc \
-	coreutils \
-	util-linux-dev \
-	musl-dev \
-	openssl-dev \
-    clang15 \
-	tar \
-    && gem install --no-document fpm \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
-    && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx --version 0.9.3 \
-    && cargo pgrx init --${PG_VER}=$(which pg_config) \
-    && git clone https://github.com/zombodb/zombodb.git \
-    && cd ./zombodb \
-    && cargo pgrx install --release \
-    && cd .. \
-    && rm -rf ./zombodb \
-    && apk del .zombodb-build-deps
+RUN if [ "$INCLUDE_POSTGIS" = "true" ]; then \
+    apk add --no-cache --virtual .zombodb-build-deps \
+        git \
+	    curl \
+	    bash \
+	    ruby-dev \
+	    ruby-etc \
+	    musl-dev \
+	    make \
+	    gcc \
+	    coreutils \
+	    util-linux-dev \
+	    musl-dev \
+	    openssl-dev \
+        clang15 \
+	    tar \
+        && gem install --no-document fpm \
+        && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+        && PATH=$HOME/.cargo/bin:$PATH \
+        && cargo install cargo-pgrx --version 0.9.3 \
+        && cargo pgrx init --${PG_VER}=$(which pg_config) \
+        && git clone https://github.com/zombodb/zombodb.git \
+        && cd ./zombodb \
+        && cargo pgrx install --release \
+        && cd .. \
+        && rm -rf ./zombodb \
+        && apk del .zombodb-build-deps; \
+    fi
 
 ## Adding pg_repack
 ARG PG_REPACK_VERSION
-RUN set -eux \
+RUN if [ "$INCLUDE_PG_REPACK" = "true" ]; then \
+    set -eux \
     && apk add --no-cache --virtual .pg_repack-build-deps \
         openssl-dev \
         zstd-dev \
@@ -281,11 +295,13 @@ RUN set -eux \
 # clean 
     && cd / \
     && rm -rf /tmp/pg_repack-${PG_REPACK_VERSION} /tmp/pg_repack.zip \
-    && apk del .pg_repack-build-deps 
+    && apk del .pg_repack-build-deps ; \
+    fi
 
 # Adding pgautofailover
 ARG PG_AUTO_FAILOVER_VERSION
-RUN set -eux \
+RUN if [ "$INCLUDE_PG_AUTO_FAILOVER" = "true" ]; then \
+    set -eux \
     && apk add --no-cache --virtual .pg_auto_failover-build-deps \
         make \ 
         gcc \
@@ -303,7 +319,7 @@ RUN set -eux \
         libxslt-dev \
         llvm15 \
 # build pg_auto_failover
-    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
+    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/citusdata/pg_auto_failover/archive/v${PG_AUTO_FAILOVER_VERSION}.zip" \
     && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
     && ls -alh /tmp \
     && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
@@ -312,12 +328,13 @@ RUN set -eux \
 # clean 
     && cd / \
     && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
-    && apk del .pg_auto_failover-build-deps
-
+    && apk del .pg_auto_failover-build-deps ; \
+    fi
 
 ## Adding postgresql-hll
 ARG POSTGRES_HLL_VERSION
-RUN set -eux \
+RUN if [ "$INCLUDE_POSTGRES_HLL" = "true" ]; then \
+    set -eux \
     && apk add --no-cache --virtual .postgresql-hll-build-deps \
         openssl-dev \
         zstd-dev \
@@ -339,5 +356,6 @@ RUN set -eux \
 # clean 
     && cd / \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
-    && apk del .postgresql-hll-build-deps 
+    && apk del .postgresql-hll-build-deps ; \
+    fi
 
