@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "pre-commit": "sqlint smoke_tests.sql"
+  },
   "devDependencies": {
     "husky": "^8.0.3"
   }

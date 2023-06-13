@@ -50,49 +50,14 @@ jobs:
               echo "Smoketest container is not running"
               exit 1
             fi
-            if psql -c "select 1"
+            if psql -f ../smoke_tests.sql -v ON_ERROR_STOP=1
             then
-              echo "Test Citus Extension"
-              psql -c "CREATE EXTENSION citus;"
-              psql -c "SELECT * FROM citus_version();"
-
-              echo "Test Citus Distributed Table"
-              psql -c "CREATE TABLE test_distributed_table (id serial primary key, data text);"
-              psql -c "SELECT create_distributed_table('test_distributed_table', 'id');"
-              psql -c "INSERT INTO test_distributed_table (data) VALUES ('test data');"
-              psql -c "SELECT * FROM test_distributed_table;"
-
-              echo "Test PostGIS Extension"
-              psql -c "CREATE EXTENSION postgis;" || true
-              psql -c "SELECT PostGIS_Version();"
-
-              echo "Test PostGIS Geometry Function"
-              psql -c "CREATE TABLE test_geometry_table (id serial primary key, geom geometry(Point, 4326));"
-              psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
-              psql -c "SELECT * FROM test_geometry_table;"
-
-              echo "Test zombodb Extension"
-              psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT zdb.internal_version();"
-              
-              echo "Test pg_repack Extension"
-              psql -c "CREATE EXTENSION pg_repack;"
-              psql -c "select repack.version(), repack.version_sql();"
-
-              echo "Test pgautofailover Extension"
-              psql -c "CREATE EXTENSION pgautofailover CASCADE;"
-              psql -c "SELECT pgautofailover.formation_settings();"
               break
             fi
             sleep 1
           done
-          if ! psql -c "select 1"
+          if ! psql -f ../smoke_tests.sql -v ON_ERROR_STOP=1
           then
-            echo "Cannot connect to PostgreSQL"
+            echo "Cannot connect to PostgreSQL or smoke tests failed"
             exit 1
           fi
-
-      - name: Show the logs
-        if: always()
-        run: |
-          docker logs smoketest-container
