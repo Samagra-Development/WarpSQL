@@ -30,7 +30,7 @@ build {
     "source.docker.bitnami"
   ]
 provisioner "file" {
-  source = "../timescaledb-bitnami-entrypoint.sh"
+  source = "timescaledb-bitnami-entrypoint.sh"
   destination = "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh"
 }
 provisioner "shell" {
