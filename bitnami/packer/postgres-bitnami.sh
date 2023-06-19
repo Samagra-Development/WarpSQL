@@ -169,7 +169,7 @@ check_env_variables PG_VER
     cargo install cargo-pgrx --version 0.9.3 
     cargo pgrx init --pg${PG_MAJOR}=/opt/bitnami/postgresql/bin/pg_config 
     git clone https://github.com/zombodb/zombodb.git 
-    cd zombodb \
+    cd zombodb
     export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release
     sed -r -i  's/[#]*\s*(POSTGRESQL_SHARED_PRELOAD_LIBRARIES)\s*=\s*"(.*)"/\1="zombodb,\2"/;s/,"/"/' /opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh
 }

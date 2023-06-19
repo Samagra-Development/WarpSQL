@@ -17,7 +17,7 @@ source "docker" "alpine" {
   commit = true
   changes = [
     "ENTRYPOINT [\"docker-entrypoint.sh\"]",
-    "CMD [postgres]"
+    "CMD [\"postgres\"]"
   ]
   run_command = ["-d", "-i","-u=root", "-t", "--entrypoint=/bin/sh", "--", "{{.Image}}"]
 }
