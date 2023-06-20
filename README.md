@@ -44,6 +44,41 @@ By utilizing WarpSQL, you can benefit from the following:
 - *Extensibility*: While WarpSQL already supports a range of extensions, it aims to expand its offerings to include even more powerful tools in the future, such as ZomboDB, PLV8, and Pg Repack.
 Get started with WarpSQL today and experience the convenience of a comprehensive Postgres solution.
 
+## PostgreSQL Image Packer Template
+
+This repository contains a Packer template for building the WarpSQL image with multiple sources and provisioners. The template supports building images based on both the Alpine and Bitnami PostgreSQL images.
+
+#### Prerequisites
+
+Before using this Packer template, ensure that you have the following prerequisites installed:
+
+- [Packer](https://www.packer.io/) 
+- [Docker](https://www.docker.com/) (for building Docker images)
+
+### Usage
+
+To build the WarpSQL image using the Packer template, follow these steps:
+
+1. Clone this repository and navigate to the packer directory:
+
+   ```shell
+    git clone https://github.com/Samagra-Development/WarpSQL.git
+    cd WarpSQL/packer
+2. Build the images:
+    ```shell 
+      packer build warpsql.pkr.hcl
+    ``` 
+    This command will build all the images specified in the template. To build only the Alpine image, you can use the -only option:
+
+    ```shell
+    packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
+    ```
+Note that currently only the `Docker` source has been added to the template.
+
+You can also customize the Docker image repository by providing a value for the `image_repository` variable using the `-var` option:
+  ```shell
+  packer build -var="image_repository={your_value}" warpsql.pkr.hcl
+  ```
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:

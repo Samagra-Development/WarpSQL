@@ -1,3 +1,4 @@
+# Packer configuration file for building a PostgreSQL image with multiple sources and provisioners
 packer {
   required_plugins {
     docker = {
@@ -6,20 +7,26 @@ packer {
     }
   }
 }
-
+# # This variable defines the repository where the built image will be committed.
 variable "image_repository" {
   type    = string
-  default = "samagragovernance/postgres"
+  default = "warpsql"
 }
+# Tags to be applied to the built image
+variable "image_tags" {
+  type    = list(string)
+  default = ["latest"]
 
+}
 source "docker" "alpine" {
   image  = "postgres:15-alpine"
   commit = true
+  # Restore the parent image's ENTRYPOINT and CMD instructions
   changes = [
     "ENTRYPOINT [\"docker-entrypoint.sh\"]",
     "CMD [\"postgres\"]"
   ]
-  run_command = ["-d", "-i", "-u=root", "-t", "--entrypoint=/bin/sh", "--", "{{.Image}}"]
+  run_command = ["-d", "-i", "-u=root", "-t", "--entrypoint=/bin/sh", "--", "{{.Image}}"] # running as the root user regardless of user instruction
 }
 
 source "docker" "bitnami" {
@@ -33,12 +40,15 @@ source "docker" "bitnami" {
   run_command = ["-d", "-i", "-u=root", "-t", "--entrypoint=/bin/sh", "--", "{{.Image}}"]
 }
 
+# Build configuration
 build {
   name = "warpsql"
+  # Specify the sources for the build
   sources = [
     "source.docker.alpine",
     "source.docker.bitnami"
   ]
+  # provisioners for the Alpine image
   provisioner "shell" {
     environment_vars = [
       "EXTENSIONS=timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus",
@@ -56,6 +66,7 @@ build {
     only   = ["docker.alpine"]
   }
 
+  # provisioners for the Bitnami image
   provisioner "file" {
     source      = "timescaledb-bitnami-entrypoint.sh"
     destination = "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh"
@@ -84,7 +95,7 @@ build {
 
   post-processor "docker-tag" {
     repository = var.image_repository
-    tags       = ["pg15-${source.name}", "latest"]
+    tags       = var.image_tags
   }
 
 }
