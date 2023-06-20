@@ -40,7 +40,7 @@ jobs:
           export PGPASSWORD=test1234
           docker container stop smoketest-container || true
           docker container rm smoketest-container || true
-          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image:latest-pg15
+          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image:latest
           for _ in {1..120}
           do
             if [ -z "$(docker container ls -q --filter name=smoketest-container)" ]

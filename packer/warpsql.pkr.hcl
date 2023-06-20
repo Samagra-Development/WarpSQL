@@ -53,13 +53,13 @@ build {
       "TS_VERSION=main"
     ]
     script = "postgres-alpine.sh"
-    only   = ["source.docker.alpine"]
+    only   = ["docker.alpine"]
   }
 
   provisioner "file" {
     source      = "timescaledb-bitnami-entrypoint.sh"
     destination = "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh"
-    only        = ["source.docker.bitnami"]
+    only        = ["docker.bitnami"]
 
   }
 
@@ -79,7 +79,7 @@ build {
       "TS_VERSION=main"
     ]
     script = "postgres-bitnami.sh"
-    only   = ["source.docker.bitnami"]
+    only   = ["docker.bitnami"]
   }
 
   post-processor "docker-tag" {
