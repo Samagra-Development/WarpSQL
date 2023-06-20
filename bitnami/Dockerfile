@@ -61,17 +61,6 @@ COPY --from=oldversions /opt/bitnami/postgresql/lib/.emptyfile /opt/bitnami/post
 COPY --from=oldversions /opt/bitnami/postgresql/share/extension/.emptyfile /opt/bitnami/postgresql/share/extension/timescaledb--*.sql /opt/bitnami/postgresql/share/extension/
 COPY bitnami/timescaledb-bitnami-entrypoint.sh /opt/bitnami/scripts/postgresql/
 
-#Add the extension tracker Dockerfile for AWS S3
-FROM minio/mc
-
-VOLUME /data
-CMD mc mb my-bucket
-
-ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-ENV AWS_DEFAULT_REGION=Global
-
-
 USER 0
 ARG TS_VERSION
 RUN set -ex \
@@ -152,102 +141,6 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
-# ADD pg_repack Extention
-ARG PG_REPACK_VERSION
-
-RUN apt-get update \
-    && apt-get install -y  unzip \
-        build-essential \
-        liblz4-dev \
-        zlib1g-dev \
-        libssl-dev \
-        wget \
-# build pg_repack
-    && wget  -O /tmp/pg_repack-${PG_REPACK_VERSION}.zip "https://api.pgxn.org/dist/pg_repack/${PG_REPACK_VERSION}/pg_repack-${PG_REPACK_VERSION}.zip" \
-    && unzip  /tmp/pg_repack-${PG_REPACK_VERSION}.zip -d /tmp \
-    && cd /tmp/pg_repack-${PG_REPACK_VERSION} \
-    && make \
-    && make install \
-#clean
-    && apt-get autoremove --purge -y \
-        unzip \
-        build-essential \
-        liblz4-dev \
-        libssl-dev \
-        zlib1g-dev \
-        wget \
-    && apt-get clean -y \
-    && rm -rf \
-        /var/lib/apt/lists/* \
-        /tmp/*               \
-        /var/tmp/* 
-
-# Adding pgautofailover
-ARG PG_AUTO_FAILOVER_VERSION
-RUN apt-get update \
-    && apt-get install -y  unzip \
-        build-essential \
-        liblz4-dev \
-        zlib1g-dev \
-        libedit-dev \
-        libssl-dev \
-        wget \
-# build pg_auto_failover
-    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
-    && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
-    && ls -alh /tmp \
-    && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
-    && make \
-    && make install \
-# clean 
-    && cd / \
-    && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
-    && apt-get autoremove --purge -y \
-        unzip \
-        build-essential \
-        liblz4-dev \
-        zlib1g-dev \
-        libedit-dev \
-        libssl-dev \
-        wget \
-    && apt-get clean -y \
-    && rm -rf \
-        /var/lib/apt/lists/* \
-        /tmp/*               \
-        /var/tmp/* 
-
-## Adding postgresql-hll
-ARG POSTGRES_HLL_VERSION
-RUN apt-get update \
-    && apt-get install -y  unzip \
-        build-essential \
-        liblz4-dev \
-        zlib1g-dev \
-        libedit-dev \
-        libssl-dev \
-        wget \
-# build postgresql-hll
-    && wget  -O /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip "https://github.com/citusdata/postgresql-hll/archive/refs/tags/v${POSTGRES_HLL_VERSION}.zip" \
-    && unzip  /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip -d /tmp \
-    && cd /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} \
-    && make \
-    && make install \
-# clean 
-    && cd / \
-    && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
-    && apt-get autoremove --purge -y \
-        unzip \
-        build-essential \
-        liblz4-dev \
-        zlib1g-dev \
-        libedit-dev \
-        libssl-dev \
-        wget \
-    && apt-get clean -y \
-    && rm -rf \
-        /var/lib/apt/lists/* \
-        /tmp/*               \
-        /var/tmp/* 
 
 # Install zombodb extension
 RUN apt-get update -y -qq --fix-missing \
@@ -278,7 +171,7 @@ RUN apt-get update -y -qq --fix-missing \
     && export PATH="/.cargo/bin:$PATH" \
     && export PGRX_HOME="/.pgrx/" \
     && mkdir -p $PGRX_HOME \
-    && cargo install cargo-pgrx --version 0.9.3 \
+    && cargo install cargo-pgrx --version 0.8.3 \
     && cargo pgrx init --pg${PG_MAJOR}=/opt/bitnami/postgresql/bin/pg_config \
     && git clone https://github.com/zombodb/zombodb.git \
     && cd zombodb \

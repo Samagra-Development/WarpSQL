@@ -18,7 +18,7 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
 ### Usage with Compose
 
-```yam
+```yaml
 version: '3.6'
 services:
   warpsql:
@@ -79,6 +79,10 @@ Once the environment is ready, you can start working on the project.
 - Commit and push your changes to your forked repository.
 - Create a pull request from your forked repository to the main WarpSQL repository.
 - We welcome contributions from the community and appreciate your support in improving WarpSQL!
+
+Install the project dependencies by running the following command in the terminal:
+
+```pip install -r requirements.txt```
 
 ### Ensure CI passes ![](https://img.shields.io/badge/CI-Passing-brightgreen)
 
