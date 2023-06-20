@@ -27,7 +27,7 @@ jobs:
       - name: Build packer template
         run: |
           cd packer
-          PACKER_LOG=1  packer init . && packer build -only 'warpsql.docker.${{matrix.type}}' -var image_repository=smoketest-image docker-${{ matrix.type }}.pkr.hcl     
+          PACKER_LOG=1  packer init . && packer build -only 'warpsql.docker.${{matrix.type}}' -var image_repository=smoketest-image warpsql.pkr.hcl     
 
       - name: Install psql
         run: sudo apt install postgresql-client
