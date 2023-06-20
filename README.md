@@ -75,9 +75,9 @@ To build the WarpSQL image using the Packer template, follow these steps:
     ```
 Note that currently only the `Docker` source has been added to the template.
 
-You can also customize the Docker image repository by providing a value for the `image_repository` variable using the `-var` option:
+You can further customize the image repository and tags by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
   ```shell
-  packer build -var="image_repository={your_value}" warpsql.pkr.hcl
+  packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
   ```
 ## Contribution
 
