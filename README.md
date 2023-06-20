@@ -68,7 +68,7 @@ To build the WarpSQL image using the Packer template, follow these steps:
     ```shell 
       packer build warpsql.pkr.hcl
     ``` 
-    This command will build all the images specified in the template. To build only the Alpine image, you can use the -only option:
+    This command will build all the images specified in the template. To build only the Alpine image, you can use the `-only` option:
 
     ```shell
     packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
