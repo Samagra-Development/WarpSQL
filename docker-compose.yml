@@ -33,3 +33,13 @@ services:
       # HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
       HASURA_GRAPHQL_MIGRATIONS_DISABLE_TRANSACTION: "true"
       HASURA_GRAPHQL_CONSOLE_ASSETS_DIR: /srv/console-assets
+      
+  pgwatch2:
+    image: cybertec/pgwatch2-postgres:latest
+    ports:
+      - "3000:3000"
+    environment:
+      PW2_ADHOC_CONN_STR: "postgresql://timescaledb:postgrespassword@timescaledb:5432/postgres?sslmode=disable"
+    depends_on:
+      - "timescaledb"
+    restart: always

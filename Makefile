@@ -5,6 +5,9 @@ ORG=samagragovernance
 PG_VER=pg15
 CITUS_VERSION="11.2.0"
 POSTGIS_VERSION=3.3.2
+PG_REPACK_VERSION = 1.4.8
+PG_AUTO_FAILOVER_VERSION = 2.0
+POSTGRES_HLL_VERSION = 2.17
 POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b
 PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
 TS_VERSION=main
@@ -21,6 +24,18 @@ TAG_VERSION=$(ORG)/$(NAME):$(TS_VERSION)-$(PG_VER)
 TAG_LATEST=$(ORG)/$(NAME):latest-$(PG_VER)
 TAG=-t $(TAG_VERSION) $(if $(BETA),,-t $(TAG_LATEST))
 TAG_OSS=-t $(TAG_VERSION)-oss $(if $(BETA),,-t $(TAG_LATEST)-oss)
+
+DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
+		    --build-arg TS_VERSION=$(TS_VERSION) \
+		    --build-arg PREV_IMAGE=$(PREV_IMAGE) \
+		    --build-arg CITUS_VERSION=$(CITUS_VERSION) \
+		    --build-arg PG_VER=$(PG_VER) \
+		    --build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION) \
+		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+		    --build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) \
+		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+	            --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  \
+		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
 
 default: image
 
@@ -57,7 +72,12 @@ default: image
 	touch .build_$(TS_VERSION)_$(PG_VER)_oss
 
 .build_$(TS_VERSION)_$(PG_VER): Dockerfile
-	docker build --build-arg PG_VERSION=$(PG_VER_NUMBER) --build-arg TS_VERSION=$(TS_VERSION) --build-arg PREV_IMAGE=$(PREV_IMAGE) --build-arg CITUS_VERSION=$(CITUS_VERSION) --build-arg PG_VER=$(PG_VER) --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256) $(TAG) .
+	docker build $(DOCKER_BUILD_ARGS) $(TAG) .
+	touch .build_$(TS_VERSION)_$(PG_VER)
+
+build-docker-cache: Dockerfile
+	docker buildx create --use --driver=docker-container
+	docker buildx  build  --progress=plain --load --cache-to "type=gha,mode=max" --cache-from type=gha  $(DOCKER_BUILD_ARGS) $(TAG) .
 	touch .build_$(TS_VERSION)_$(PG_VER)
 
 image: .build_$(TS_VERSION)_$(PG_VER)
@@ -86,4 +106,4 @@ clean:
 	rm -f *~ .build_* .multi_*
 	-docker buildx rm multibuild
 
-.PHONY: default image push push-oss oss multi multi-oss clean all
+.PHONY: default image push push-oss oss multi multi-oss clean all build-docker-cache

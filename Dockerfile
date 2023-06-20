@@ -39,6 +39,16 @@ COPY --from=tools /go/bin/* /usr/local/bin/
 COPY --from=oldversions /usr/local/lib/postgresql/timescaledb-*.so /usr/local/lib/postgresql/
 COPY --from=oldversions /usr/local/share/postgresql/extension/timescaledb--*.sql /usr/local/share/postgresql/extension/
 
+# Add master extension tracker for support AWS S3
+FROM minio/mc
+
+VOLUME /data
+CMD mc mb my-bucket
+
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV AWS_DEFAULT_REGION=Global
+
 ARG TS_VERSION
 RUN set -ex \
     && apk add libssl1.1 \
@@ -74,7 +84,7 @@ RUN set -ex \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
 
 # Adding PG Vector
 
@@ -142,7 +152,7 @@ RUN set -eux \
             set -eux ; \
             export GEOS_ALPINE_VER=3.11 ; \
             export GDAL_ALPINE_VER=3.6.4-r4 ; \
-            export PROJ_ALPINE_VER=9.2.0-r0 ; \
+            export PROJ_ALPINE_VER=9.2 ; \
         elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
             set -eux ; \
             export GEOS_ALPINE_VER=3.8 ; \
@@ -249,7 +259,7 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
     && gem install --no-document fpm \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
     && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx --version 0.8.3 \
+    && cargo install cargo-pgrx --version 0.9.3 \
     && cargo pgrx init --${PG_VER}=$(which pg_config) \
     && git clone https://github.com/zombodb/zombodb.git \
     && cd ./zombodb \
@@ -257,3 +267,87 @@ RUN apk add --no-cache --virtual .zombodb-build-deps \
     && cd .. \
     && rm -rf ./zombodb \
     && apk del .zombodb-build-deps
+
+## Adding pg_repack
+ARG PG_REPACK_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_repack-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        clang15 \
+        gawk \
+        llvm15 \
+        gcc \
+        musl-dev \
+# build pg_repack
+    && wget  -O /tmp/pg_repack-${PG_REPACK_VERSION}.zip "https://api.pgxn.org/dist/pg_repack/${PG_REPACK_VERSION}/pg_repack-${PG_REPACK_VERSION}.zip" \
+    && unzip  /tmp/pg_repack-${PG_REPACK_VERSION}.zip -d /tmp \
+    && cd /tmp/pg_repack-${PG_REPACK_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_repack-${PG_REPACK_VERSION} /tmp/pg_repack.zip \
+    && apk del .pg_repack-build-deps 
+
+# Adding pgautofailover
+ARG PG_AUTO_FAILOVER_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_auto_failover-build-deps \
+        make \ 
+        gcc \
+        musl-dev \
+        krb5-dev \ 
+        openssl-dev \
+        clang15 \ 
+        ncurses-dev \
+        linux-headers \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \
+        libedit-dev \
+        libxml2-utils \
+        libxslt-dev \
+        llvm15 \
+# build pg_auto_failover
+    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
+    && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
+    && ls -alh /tmp \
+    && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
+    && apk del .pg_auto_failover-build-deps
+
+
+## Adding postgresql-hll
+ARG POSTGRES_HLL_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .postgresql-hll-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        git \
+        clang15 \
+        gawk \
+        llvm15 \
+        g++ \
+        musl-dev \
+# build postgresql-hll
+    && wget  -O /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip "https://github.com/citusdata/postgresql-hll/archive/refs/tags/v${POSTGRES_HLL_VERSION}.zip" \
+    && unzip  /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip -d /tmp \
+    && cd /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
+    && apk del .postgresql-hll-build-deps 
+
