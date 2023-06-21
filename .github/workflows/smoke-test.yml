@@ -1,4 +1,9 @@
 name: Smoke Test Docker Image
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
 on:
   pull_request:
   push:
