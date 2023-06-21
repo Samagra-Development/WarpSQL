@@ -33,6 +33,22 @@ services:
       POSTGRES_USER: warpSQLUser
       POSTGRES_PASSWORD: warpSQLPass
 ```
+# Environment Variables
+
+Ensure that you have a `.env.sample` file same directory as the `docker-compose.yml` file.
+Open the `.env.sample` file in a text editor.
+Provide placeholders for the required environment variables in the `.env.sample` file. Do not include any actual sensitive information in this file. Here's an example of how the `.env.sample` file should look:
+
+```
+POSTGRES_USER: timescaledb
+POSTGRES_PASSWORD: postgrespassword
+```
+Before running the project, create a new file named `.env` in the same directory as the `docker-compose.yml` file.
+Open the `.env` file and provide the actual values for the environment variables, specific to your setup. For example:
+`POSTGRES_USER=myuser`
+`POSTGRES_PASSWORD=mypassword`
+
+Replace myuser and mypassword with the actual values you want to use.
 
 WarpSQL is a powerful solution that provides opinionated extensions to Postgres, conveniently packaged as a single Docker deployment. It eliminates the need to install multiple separate databases by offering a comprehensive set of features in one place (although not everything, as some features might not be included).
 
