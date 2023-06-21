@@ -18,7 +18,7 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
 ### Usage with Compose
 
-```yam
+```yaml
 version: '3.6'
 services:
   warpsql:
@@ -68,17 +68,22 @@ To build the WarpSQL image using the Packer template, follow these steps:
     ```shell 
       packer build warpsql.pkr.hcl
     ``` 
-    This command will build all the images specified in the template. To build only the Alpine image, you can use the `-only` option:
+To build only the Alpine image, you can use the `-only` option:
 
-    ```shell
-    packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
-    ```
-Note that currently only the `Docker` source has been added to the template.
+  ```shell
+  packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
+  ```
+  By default, all supported extensions are installed. If you want to install specific extensions, you can provide the `extensions` variable:
+  ```shell
+  packer build -var extentions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
+  ```
+
+  Note that currently only the `Docker` source has been added to the template.
 
 You can further customize the image repository and tags by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
-  ```shell
-  packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
-  ```
+```shell
+packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
+```
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
