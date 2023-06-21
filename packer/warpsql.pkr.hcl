@@ -18,6 +18,10 @@ variable "image_tags" {
   default = ["latest"]
 
 }
+variable "extentions" {
+    type = string
+    default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus"
+}
 source "docker" "alpine" {
   image  = "postgres:15-alpine"
   commit = true
@@ -51,7 +55,7 @@ build {
   # provisioners for the Alpine image
   provisioner "shell" {
     environment_vars = [
-      "EXTENSIONS=timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus",
+      "EXTENSIONS=${var.extentions}",
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
@@ -76,7 +80,7 @@ build {
 
   provisioner "shell" {
     environment_vars = [
-      "EXTENSIONS=timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus",
+      "EXTENSIONS=${var.extentions}",
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
