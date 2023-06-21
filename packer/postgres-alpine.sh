@@ -356,6 +356,7 @@ for extension in "${EXTENSION_LIST[@]}"; do
         *)
             # Handle unrecognized extensions
             echo "Unknown extension: $extension"
+            exit 1
             ;;
     esac
 done
