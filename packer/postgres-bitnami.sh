@@ -117,6 +117,7 @@ check_env_variables CITUS_VERSION
 install_postgis(){
 # Adding Postgis
 check_env_variables POSTGIS_VERSION POSTGIS_SHA256
+    cd /tmp
     apt update 
     apt install -y \
         ca-certificates \
