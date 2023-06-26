@@ -116,19 +116,53 @@ check_env_variables CITUS_VERSION
 
 install_postgis(){
 # Adding Postgis
-check_env_variables POSTGIS_VERSION PG_MAJOR POSTGIS_MAJOR
-    apt-get update 
-    apt-get install -y lsb-release gnupg2 wget
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list 
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - 
-    apt-get update 
-    apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR 
-    apt-get install -y --no-install-recommends \
-           ca-certificates \
-           \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts 
-    rm -rf /var/lib/apt/lists/*
+check_env_variables POSTGIS_VERSION POSTGIS_SHA256
+    apt update 
+    apt install -y \
+        ca-certificates \
+        openssl \
+        tar \
+        wget \
+        gettext \
+        automake \
+        libltdl-dev \
+        libxml2-dev \
+        libgeos-dev \
+        libproj-dev \
+        libprotobuf-c-dev \
+        protobuf-c-compiler \
+        g++\
+        gcc \
+        make 
+    wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" 
+    echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - 
+    mkdir -p /usr/src/postgis 
+    tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 
+    rm postgis.tar.gz 
+# build PostGIS
+    cd /usr/src/postgis 
+    gettextize 
+    ./autogen.sh 
+    ./configure \
+        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"
+    make -j$(nproc) 
+    make install 
+    cd / 
+# clean
+    apt-get autoremove --purge -y \
+        wget \
+        g++\
+        gcc \
+        make 
+    apt-get clean -y 
+    rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
 }
 
 install_zombodb(){
@@ -196,7 +230,6 @@ install_pgrepack(){
         build-essential \
         liblz4-dev \
         libssl-dev \
-        zlib1g-dev \
         wget 
     apt-get clean -y 
     rm -rf \
@@ -232,7 +265,6 @@ install_pgautofailover(){
         unzip \
         build-essential \
         liblz4-dev \
-        zlib1g-dev \
         libedit-dev \
         libssl-dev \
         libxslt1-dev \
@@ -271,7 +303,6 @@ check_env_variables POSTGRES_HLL_VERSION
         unzip \
         build-essential \
         liblz4-dev \
-        zlib1g-dev \
         libedit-dev \
         libssl-dev \
         wget 
