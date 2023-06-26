@@ -274,6 +274,7 @@ RUN apt-get update \
         /var/tmp/* 
 
 # Install zombodb extension
+ARG PG_MAJOR
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
     && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list \
