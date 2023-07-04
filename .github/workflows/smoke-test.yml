@@ -24,6 +24,8 @@ jobs:
       matrix:
         pg: [15]
         type: ['normal', 'bitnami']
+    permissions:
+      issues: write
     steps:
       - name: Check out the source
         uses: actions/checkout@v3
