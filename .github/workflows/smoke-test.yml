@@ -132,7 +132,7 @@ jobs:
             let commitSHA = context.github.sha
             let imageSize = captureExecOutput("docker image list --format \"{{.Size}}\" smoketest-image")
             let imageLayers = captureExecOutput("docker image history -H  --format \"table  {{.CreatedBy}} \t\t {{.Size}}\" smoketest-image")
-            githubMessage = `${{ matrix.type }} analysis on ${commitSHA}
+            let githubMessage = `${{ matrix.type }} image analysis on ${commitSHA}
             Total Size:  ${imageSize}
             layers
             ${imageLayers}
