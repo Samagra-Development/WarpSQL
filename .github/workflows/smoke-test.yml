@@ -75,3 +75,38 @@ jobs:
         if: always()
         run: |
           docker logs smoketest-container
+      - name: comment the image size
+        uses: actions/github-script@v6.4
+        with:
+          script: |
+            function captureExecOutput(command){
+            let myOutput = '';
+            let myError = '';
+
+            const options = {};
+            options.listeners = {
+              stdout: (data: Buffer) => {
+                myOutput += data.toString();
+              },
+              stderr: (data: Buffer) => {
+                myError += data.toString();
+              }
+            };
+            await exec.exec(command,options);
+            console.log(myOutput);
+            return myOutput;
+            }
+            let commitSHA = context.github.sha
+            let imageSize = captureExecOutput("docker image list --format \"{{.Size}}\" smoketest-image")
+            let imageLayers = captureExecOutput("docker image history -H  --format \"table  {{.CreatedBy}} \t\t {{.Size}}\" smoketest-image")
+            githubMessage = `${{ matrix.type }} analysis on ${commitSHA}
+            Total Size:  ${imageSize}
+            layers
+            ${imageLayers}
+            `
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: githubMessage
+              });
