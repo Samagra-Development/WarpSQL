@@ -114,7 +114,7 @@ jobs:
         uses: actions/github-script@v6.4.1
         with:
           script: |
-            function captureExecOutput(command,arguments){
+            async function captureExecOutput(command,arguments){
             let myOutput = '';
             let myError = '';
 
