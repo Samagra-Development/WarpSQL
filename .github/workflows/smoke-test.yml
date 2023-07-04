@@ -127,7 +127,7 @@ jobs:
                 myError += data.toString();
               }
             };
-            await exec.exec(command,arguments,options);
+            await exec.exec(command,arguments,options)
             .then(console.log(myOutput);
             return myOutput;);
             }
