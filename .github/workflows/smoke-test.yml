@@ -130,8 +130,8 @@ jobs:
             return myOutput;
             }
             let commitSHA = context.sha
-            let imageSize = captureExecOutput('docker image list --format \"{{.Size}}\" smoketest-image')
-            let imageLayers = captureExecOutput('docker image history -H  --format \"table  {{.CreatedBy}} \t\t {{.Size}}\" smoketest-image')
+            let imageSize = captureExecOutput('docker image list --format "{{.Size}}" smoketest-image')
+            let imageLayers = captureExecOutput('docker image history -H  --format "table  {{.CreatedBy}} \\t\\t {{.Size}}" smoketest-image')
             let githubMessage = `${{ matrix.type }} image analysis on ${commitSHA}
             Total Size:  ${imageSize}
             layers
