@@ -125,26 +125,64 @@ RUN set -ex \
         /var/tmp/* 
     
 # Add PostGIS Extension
-ARG POSTGIS_MAJOR
-ARG PG_MAJOR
 ARG POSTGIS_VERSION
+ARG POSTGIS_SHA256
 
-RUN apt-get update \
-     && apt-get install -y lsb-release gnupg2 \
-     && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
-     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-     && apt-get update \
-      && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
-      && apt-get install -y --no-install-recommends \
-           ca-certificates \
-           \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
-      && rm -rf /var/lib/apt/lists/*
+RUN set -eux \
+    && apt update \
+    && apt install -y \
+        ca-certificates \
+        openssl \
+        tar \
+        wget \
+        gettext \
+        automake \
+        libltdl-dev \
+        libxml2-dev \
+        libgeos-dev \
+        libproj-dev \
+        libprotobuf-c-dev \
+        protobuf-c-compiler \
+        g++\
+        gcc \
+        make \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
+    && ./autogen.sh \
+    && ./configure \
+        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"\
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+# clean
+    && apt-get autoremove --purge -y \
+        wget \
+        g++\
+        gcc \
+        make \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 # ADD pg_repack Extention
 ARG PG_REPACK_VERSION
 
-RUN apt-get update \
+RUN set -eux \
+    && apt-get update \
     && apt-get install -y  unzip \
         build-essential \
         liblz4-dev \
@@ -163,7 +201,6 @@ RUN apt-get update \
         build-essential \
         liblz4-dev \
         libssl-dev \
-        zlib1g-dev \
         wget \
     && apt-get clean -y \
     && rm -rf \
@@ -195,7 +232,6 @@ RUN apt-get update \
         unzip \
         build-essential \
         liblz4-dev \
-        zlib1g-dev \
         libedit-dev \
         libssl-dev \
         wget \
@@ -228,7 +264,6 @@ RUN apt-get update \
         unzip \
         build-essential \
         liblz4-dev \
-        zlib1g-dev \
         libedit-dev \
         libssl-dev \
         wget \
@@ -239,6 +274,7 @@ RUN apt-get update \
         /var/tmp/* 
 
 # Install zombodb extension
+ARG PG_MAJOR
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
     && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list \
