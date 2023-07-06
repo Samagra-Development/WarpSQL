@@ -123,7 +123,21 @@ RUN set -ex \
         /var/lib/apt/lists/* \
         /tmp/*               \
         /var/tmp/* 
-    
+
+# Add PG vector
+RUN apt-get update \
+    && cd /tmp \
+    && apt-get install -y --no-install-recommends build-essential git \
+    && git clone --branch v0.4.4 https://github.com/pgvector/pgvector.git /tmp/pgvector \
+    && cd /tmp/pgvector \
+    && make clean \
+    && make OPTFLAGS="" \
+    && make install \
+    && rm -r /tmp/pgvector \
+    && apt-get remove -y build-essential git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # Add PostGIS Extension
 ARG POSTGIS_VERSION
 ARG POSTGIS_SHA256
