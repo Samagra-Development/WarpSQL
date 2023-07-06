@@ -84,6 +84,18 @@ You can further customize the image repository and tags by providing values for 
 ```shell
 packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
 ```
+
+### List of supported extensions
+|Extension       | Identifier       |
+|----------------|------------------|
+|[PgVector](https://github.com/pgvector/pgvector)        | `pgvector`       |
+|[TimescaleDB](https://github.com/timescale/timescaledb)     | `timescaledb`    |
+|[Citus](https://github.com/citusdata/citus)           | `citus`          |
+|[PostGIS](https://github.com/postgis/postgis)         | `postgis`        |
+|[ZomboDB](https://github.com/zombodb/zombodb)         | `zombodb`        |
+|[PgRepack](https://github.com/reorg/pg_repack)        | `pg_repack`      |
+|[PG Auto Failover](https://github.com/hapostgres/pg_auto_failover)| `pgautofailover` |
+|[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
