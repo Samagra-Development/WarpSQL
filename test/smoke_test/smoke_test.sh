@@ -3,7 +3,7 @@
 set -ex
 
 # Find all test script files in the directory
-test_scripts=$(find ./test_extentions -type f -name 'test_*.sh')
+test_scripts=$(find ./extentions_test -type f -name 'test_*.sh')
 
 # If no extensions provided, run all test scripts
 if [[ -z $1 ]]; then
