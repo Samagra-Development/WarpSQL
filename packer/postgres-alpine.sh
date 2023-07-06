@@ -96,9 +96,9 @@ check_env_variables CITUS_VERSION
     make install 
     cd ~ 
     rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} 
-    apk del .citus-deps .citus-build-deps
+    apk del .citus-build-deps
     sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'citus,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
-
+    exit 2
 }
 
 install_postgis(){
