@@ -16,7 +16,7 @@ env:
   PLATFORM: linux/amd64
 
 jobs:
-  smoketest:
+  smoketest-all:
     name: PG${{ matrix.pg }}-${{ matrix.type }}
     runs-on: ubuntu-latest
     strategy:
@@ -55,40 +55,63 @@ jobs:
             fi
             if psql -c "select 1"
             then
-              echo "Test Citus Extension"
-              psql -c "CREATE EXTENSION citus;"
-              psql -c "SELECT * FROM citus_version();"
+            bash ./test/smoke_test/smoke_test.sh 
+              break
+            fi
+            sleep 1
+          done
+          if ! psql -c "select 1"
+          then
+            echo "Cannot connect to PostgreSQL"
+            exit 1
+          fi
 
-              echo "Test Citus Distributed Table"
-              psql -c "CREATE TABLE test_distributed_table (id serial primary key, data text);"
-              psql -c "SELECT create_distributed_table('test_distributed_table', 'id');"
-              psql -c "INSERT INTO test_distributed_table (data) VALUES ('test data');"
-              psql -c "SELECT * FROM test_distributed_table;"
+      - name: Show the logs
+        if: always()
+        run: |
+          docker logs smoketest-container
+  
+  smoketest-individual:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-${{matrix.extention}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ['alpine', 'bitnami']
+        extention: ['timescaledb','pgvector','postgis','zombodb','pg_repack','pgautofailover','hll','citus']
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v3
 
-              echo "Test PostGIS Extension"
-              psql -c "CREATE EXTENSION postgis;" || true
-              psql -c "SELECT PostGIS_Version();"
 
-              echo "Test PostGIS Geometry Function"
-              psql -c "CREATE TABLE test_geometry_table (id serial primary key, geom geometry(Point, 4326));"
-              psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
-              psql -c "SELECT * FROM test_geometry_table;"
+      - name: Build packer template
+        run: |
+          cd packer
+          PACKER_LOG=1  packer init . && packer build -only 'warpsql.docker.${{matrix.type}}' -var image_repository=smoketest-image  -var extentions='${{matrix.extention}}'  warpsql.pkr.hcl     
 
-              echo "Test zombodb Extension"
-              psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT zdb.internal_version();"
-              
-              echo "Test pg_repack Extension"
-              psql -c "CREATE EXTENSION pg_repack;"
-              psql -c "select repack.version(), repack.version_sql();"
+      - name: Install psql
+        run: sudo apt install postgresql-client
 
-              echo "Test pgautofailover Extension"
-              psql -c "CREATE EXTENSION pgautofailover CASCADE;"
-              psql -c "SELECT pgautofailover.formation_settings();"
-              
-              echo "Test HyperLogLog Extension"
-              psql -c "CREATE EXTENSION hll;"
-              psql -c "select hll_hash_text('hello world');"
+      - name: Run the smoke test
+        run: |
+          set -eu
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          docker container stop smoketest-container || true
+          docker container rm smoketest-container || true
+          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image:latest
+          for _ in {1..120}
+          do
+            if [ -z "$(docker container ls -q --filter name=smoketest-container)" ]
+            then
+              echo "Smoketest container is not running"
+              exit 1
+            fi
+            if psql -c "select 1"
+            then
+              bash ./test/smoke_test/smoke_test.sh "${{matrix.extention}}"
               break
             fi
             sleep 1
