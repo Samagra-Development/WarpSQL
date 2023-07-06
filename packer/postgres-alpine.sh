@@ -72,12 +72,12 @@ install_citus(){
 check_env_variables CITUS_VERSION
     apk add --no-cache --virtual .citus-deps \
         curl \
-        jq 
+        jq \
+        curl-dev
     apk add --no-cache --virtual .citus-build-deps \
         gcc \
         libc-dev \
         make \
-        curl-dev \
         lz4-dev \
         zstd-dev \
         clang15 \
