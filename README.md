@@ -18,7 +18,7 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
 ### Usage with Compose
 
-```yam
+```yaml
 version: '3.6'
 services:
   warpsql:
@@ -44,6 +44,58 @@ By utilizing WarpSQL, you can benefit from the following:
 - *Extensibility*: While WarpSQL already supports a range of extensions, it aims to expand its offerings to include even more powerful tools in the future, such as ZomboDB, PLV8, and Pg Repack.
 Get started with WarpSQL today and experience the convenience of a comprehensive Postgres solution.
 
+## PostgreSQL Image Packer Template
+
+This repository contains a Packer template for building the WarpSQL image with multiple sources and provisioners. The template supports building images based on both the Alpine and Bitnami PostgreSQL images.
+
+#### Prerequisites
+
+Before using this Packer template, ensure that you have the following prerequisites installed:
+
+- [Packer](https://www.packer.io/) 
+- [Docker](https://www.docker.com/) (for building Docker images)
+
+### Usage
+
+To build the WarpSQL image using the Packer template, follow these steps:
+
+1. Clone this repository and navigate to the packer directory:
+
+   ```shell
+    git clone https://github.com/Samagra-Development/WarpSQL.git
+    cd WarpSQL/packer
+2. Build the images:
+    ```shell 
+      packer build warpsql.pkr.hcl
+    ``` 
+To build only the Alpine image, you can use the `-only` option:
+
+  ```shell
+  packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
+  ```
+  By default, all supported [extensions](#list-of-supported-extensions) are installed. If you want to install specific extensions, you can provide the `extensions` variable:
+  ```shell
+  packer build -var extentions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
+  ```
+
+  Note that currently only the `Docker` source has been added to the template.
+
+You can further customize the image repository and tags by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
+```shell
+packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
+```
+
+### List of supported extensions
+|Extension       | Identifier       |
+|----------------|------------------|
+|[PgVector](https://github.com/pgvector/pgvector)        | `pgvector`       |
+|[TimescaleDB](https://github.com/timescale/timescaledb)     | `timescaledb`    |
+|[Citus](https://github.com/citusdata/citus)           | `citus`          |
+|[PostGIS](https://github.com/postgis/postgis)         | `postgis`        |
+|[ZomboDB](https://github.com/zombodb/zombodb)         | `zombodb`        |
+|[PgRepack](https://github.com/reorg/pg_repack)        | `pg_repack`      |
+|[PG Auto Failover](https://github.com/hapostgres/pg_auto_failover)| `pgautofailover` |
+|[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
