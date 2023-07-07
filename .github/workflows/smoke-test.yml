@@ -60,40 +60,7 @@ jobs:
             fi
             if psql -c "select 1"
             then
-              echo "Test Citus Extension"
-              psql -c "CREATE EXTENSION citus;"
-              psql -c "SELECT * FROM citus_version();"
-
-              echo "Test Citus Distributed Table"
-              psql -c "CREATE TABLE test_distributed_table (id serial primary key, data text);"
-              psql -c "SELECT create_distributed_table('test_distributed_table', 'id');"
-              psql -c "INSERT INTO test_distributed_table (data) VALUES ('test data');"
-              psql -c "SELECT * FROM test_distributed_table;"
-
-              echo "Test PostGIS Extension"
-              psql -c "CREATE EXTENSION postgis;" || true
-              psql -c "SELECT PostGIS_Version();"
-
-              echo "Test PostGIS Geometry Function"
-              psql -c "CREATE TABLE test_geometry_table (id serial primary key, geom geometry(Point, 4326));"
-              psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
-              psql -c "SELECT * FROM test_geometry_table;"
-
-              echo "Test zombodb Extension"
-              psql -c "CREATE EXTENSION zombodb;"
-              psql -c "SELECT zdb.internal_version();"
-              
-              echo "Test pg_repack Extension"
-              psql -c "CREATE EXTENSION pg_repack;"
-              psql -c "select repack.version(), repack.version_sql();"
-
-              echo "Test pgautofailover Extension"
-              psql -c "CREATE EXTENSION pgautofailover CASCADE;"
-              psql -c "SELECT pgautofailover.formation_settings();"
-              
-              echo "Test HyperLogLog Extension"
-              psql -c "CREATE EXTENSION hll;"
-              psql -c "select hll_hash_text('hello world');"
+            bash ./test/smoke_test/smoke_test.sh
               break
             fi
             sleep 1

@@ -1,0 +1,128 @@
+name: Smoke Test packer template
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  ORG: timescaledev
+  TS_VERSION: main
+  PLATFORM: linux/amd64
+
+jobs:
+  smoketest-all:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ['alpine', 'bitnami']
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v3
+
+
+      - name: Build packer template
+        run: |
+          cd packer
+          PACKER_LOG=1  packer init . && packer build -only 'warpsql.docker.${{matrix.type}}' -var image_repository=smoketest-image warpsql.pkr.hcl     
+
+      - name: Install psql
+        run: sudo apt install postgresql-client
+
+      - name: Run the smoke test
+        run: |
+          set -eu
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          docker container stop smoketest-container || true
+          docker container rm smoketest-container || true
+          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image:latest
+          for _ in {1..120}
+          do
+            if [ -z "$(docker container ls -q --filter name=smoketest-container)" ]
+            then
+              echo "Smoketest container is not running"
+              exit 1
+            fi
+            if psql -c "select 1"
+            then
+            bash ./test/smoke_test/smoke_test.sh 
+              break
+            fi
+            sleep 1
+          done
+          if ! psql -c "select 1"
+          then
+            echo "Cannot connect to PostgreSQL"
+            exit 1
+          fi
+
+      - name: Show the logs
+        if: always()
+        run: |
+          docker logs smoketest-container
+  
+  smoketest-individual:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-${{matrix.extention}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ['alpine', 'bitnami']
+        extention: ['timescaledb','pgvector','postgis','zombodb','pg_repack','pgautofailover','hll','citus']
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v3
+
+
+      - name: Build packer template
+        run: |
+          cd packer
+          PACKER_LOG=1  packer init . && packer build -only 'warpsql.docker.${{matrix.type}}' -var image_repository=smoketest-image  -var extentions='${{matrix.extention}}'  warpsql.pkr.hcl     
+
+      - name: Install psql
+        run: sudo apt install postgresql-client
+
+      - name: Run the smoke test
+        run: |
+          set -eu
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          docker container stop smoketest-container || true
+          docker container rm smoketest-container || true
+          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image:latest
+          for _ in {1..120}
+          do
+            if [ -z "$(docker container ls -q --filter name=smoketest-container)" ]
+            then
+              echo "Smoketest container is not running"
+              exit 1
+            fi
+            if psql -c "select 1"
+            then
+              bash ./test/smoke_test/smoke_test.sh "${{matrix.extention}}"
+              break
+            fi
+            sleep 1
+          done
+          if ! psql -c "select 1"
+          then
+            echo "Cannot connect to PostgreSQL"
+            exit 1
+          fi
+
+      - name: Show the logs
+        if: always()
+        run: |
+          docker logs smoketest-container
