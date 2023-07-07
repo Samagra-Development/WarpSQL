@@ -94,9 +94,9 @@ jobs:
                 myError += data.toString();
               }
             };
-            await exec.exec(command,arguments,options)
-            .then(console.log(myOutput);
-            return myOutput;);
+            await exec.exec(command,arguments,options);
+            console.log(myOutput);
+            return myOutput;
             }
             let commitSHA = context.sha;
             let imageSize = await captureExecOutput('docker', ['image', 'list', '--format="{{.Size}}"','smoketest-image']);
