@@ -9,8 +9,8 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: timescaledb
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
   graphql-engine:
     image: hasura/graphql-engine:latest
