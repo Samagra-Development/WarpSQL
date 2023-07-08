@@ -43,3 +43,16 @@ services:
     depends_on:
       - "timescaledb"
     restart: always
+
+  extension-tracker:
+    image: minio/mc
+    volumes:
+      - ./data:/data
+    command: mc mb my-bucket
+    depends_on:
+      - "timescaledb"
+    restart: always
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=Global
