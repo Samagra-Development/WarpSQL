@@ -76,6 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         pg: [15]
         type: ['alpine', 'bitnami']
