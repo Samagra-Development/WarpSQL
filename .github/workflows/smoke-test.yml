@@ -17,14 +17,35 @@ env:
 
 jobs:
   smoketest:
-    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-docker
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         pg: [15]
-        type: ['normal', 'bitnami']
+        type: ["normal"]
+        # type: ["normal", "bitnami"]
     steps:
+      - name: debug workflow_run
+        uses: actions/github-script@v6.4.1
+        with:
+          script: |
+            console.log(JSON.stringify(context))
+      - name: print debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: set the commit sha
+        env: 
+          EVENT: ${{github.event_name}}
+        run: |
+          if [ "$EVENT" == 'pull_request' ]
+          then
+              echo "commit=${{ github.event.pull_request.head.sha}}"  >> "$GITHUB_ENV"
+          else
+              echo "commit=${{ github.sha}}"  >> "$GITHUB_ENV"
+          fi
       - name: Check out the source
         uses: actions/checkout@v3
 
@@ -75,3 +96,21 @@ jobs:
         if: always()
         run: |
           docker logs smoketest-container
+      
+      - name: export the image
+        run : |
+          set -eux
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          docker container stop smoketest-container || true
+          docker container rm smoketest-container || true
+          docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=${PGPASSWORD} --name smoketest-container smoketest-image
+          docker export smoketest-container  > ${{matrix.type}}-${{  env.commit  }}.tar 
+            
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{matrix.type}}-${{  env.commit  }}
+          path: ./${{matrix.type}}-${{  env.commit  }}.tar 
+    

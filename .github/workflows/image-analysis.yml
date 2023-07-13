@@ -1,0 +1,115 @@
+name: Image Analysis
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+    workflow_run:
+      workflows: ["Smoke Test Docker Image"]
+      types: [completed]
+
+
+env:
+  ORG: timescaledev
+  TS_VERSION: main
+  PLATFORM: linux/amd64
+
+jobs:
+  image-analysis:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-analysis
+    runs-on: ubuntu-latest
+    permissions: {}
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ["normal"]
+        # type: ["normal", "bitnami"]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: debug workflow_run
+        uses: actions/github-script@v6.4.1
+        with:
+          script: |
+            console.log(JSON.stringify(context))
+      - name: print debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Check out the source
+        uses: actions/checkout@v3
+
+      - name: Download image
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+            workflow: smoke-test.yml
+            name: ${{matrix.type}}-${{ github.event.workflow_run.head_sha  }}
+            check_artifacts: true
+            search_artifacts: true
+            if_no_artifact_found: fail
+            skip_unpack: true
+      - name: "unzip"
+        run: |
+          unzip ${{matrix.type}}-${{ github.event.workflow_run.head_sha }}.zip
+    
+      - name: Load image
+        run: |
+            cat ./${{matrix.type}}-${{ github.event.workflow_run.head_sha  }}.tar  | docker import - smoketest-image
+      # set up dependency for github scripts
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: |
+          npm install fs
+
+      - name: Download metrics
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          workflow: image-analysis.yml
+          name: image-metric-${{matrix.type}}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+      - name: Download comments
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+            workflow: image-analysis.yml
+            name: image-analysis-comments
+            check_artifacts: true
+            search_artifacts: true
+            if_no_artifact_found: warn
+      - name: Analyse image
+        uses: actions/github-script@v6.4.1
+        with:
+          workspace: ${{ github.workspace }}
+          image-type: ${{matrix.type}}
+          script: |
+            const fs = require('fs')
+            const script = require('./image_size.js')
+            console.log(script({github, context, exec,core,fs}))
+
+      - name: Hide bot comments
+        uses: kanga333/comment-hider@master
+        if: github.event.workflow_run.event == 'pull_request'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          hide_user_name: "github-actions[bot]"
+          hide_reason: "OUTDATED"
+          leave_visible: 2
+          issue_number: ${{ github.event.number}}
+
+      - uses: actions/upload-artifact@v3
+        if: github.event.workflow_run.event == 'pull_request'
+        with:
+            name: image-analysis-comments
+            path: comments.json
+            if-no-files-found: error
+      - uses: actions/upload-artifact@v3
+        if: github.event.workflow_run.event == 'push'
+        with:
+          name: image-metric-${{matrix.type}}
+          path: image-metrics-${{matrix.type}}.json
+          if-no-files-found: error
