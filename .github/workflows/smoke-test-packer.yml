@@ -17,7 +17,7 @@ env:
 
 jobs:
   smoketest-all:
-    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-paacker
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -72,7 +72,7 @@ jobs:
           docker logs smoketest-container
   
   smoketest-individual:
-    name: PG${{ matrix.pg }}-${{ matrix.type }}-${{matrix.extention}}
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-${{matrix.extention}}-packer
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
