@@ -1,0 +1,97 @@
+# image-analysis.yml and image-analysis-comment.yml workflows,  are used to calculate and comment the size difference between Dockerfile in the main branch and the changes made in a pull request.
+
+name: comment Image Analysis on PR
+
+# this workflow writes all the messages present in the comment artifact to the respective Pull Request so only one parallel run is required
+concurrency:
+  group: ${{ github.workflow }}
+
+on:
+  workflow_run:
+    workflows: ["Image Analysis"]
+    types:
+      - completed
+
+jobs:
+  comment-on-pr:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Download the comments list
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          workflow: image-analysis.yml
+          name: image-analysis-comments
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: fail
+      
+      # set up dependency for github scripts
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: |
+          npm install fs
+
+      - name: Comment on PR
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Modified from https://github.com/kanga333/comment-hider
+            async function hideComment(issueNumber,userName,reason){
+              const comments = await github.issues.listComments({
+                owner:context.repo.owner,
+                repo:context.repo.repo,
+                issue_number: issueNumber
+              });
+              const ids = [];
+              for (const r of comments.data) {
+                if (r.user !== null && r.user.login !== userName) {
+                  continue;
+                }
+                ids.push(r.node_id);
+              }
+              ids.splice(-1,1);
+              for ( let id of ids){
+              const resp = await github.graphql(`
+                  mutation {
+                    minimizeComment(input: {classifier: ${reason}, subjectId: "${id}"}) {
+                      minimizedComment {
+                        isMinimized
+                      }
+                    }
+                  }
+                `);
+              
+                if (resp.errors) {
+                  core.setFailed(`${resp.errors[0].message}`);
+                }
+              }
+            }
+            var fs = require('fs');
+            var comments =  JSON.parse(fs.readFileSync('./comments.json'));
+            console.log(comments);
+            while (comments.length > 0) {
+            const comment = comments[0];   
+            hideComment(comment.issue_number,'github-actions[bot]','OUTDATED') ;        
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: comment.issue_number,
+              body: comment.body
+              });
+              comments.shift(); 
+            }
+
+      - name: Delete the comment list
+        uses: jimschubert/delete-artifacts-action@v1
+        with:
+          log_level: "debug"
+          artifact_name: image-analysis-comments
+          min_bytes: "0"

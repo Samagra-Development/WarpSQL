@@ -1,0 +1,112 @@
+# image-analysis.yml and image-analysis-comment.yml workflows,  are used to calculate and comment the size difference between Dockerfiles in the main branch and the changes made in a pull request.
+name: Image Analysis
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_run:
+    workflows: ["Smoke Test Docker Image"]
+    types: [completed]
+
+env:
+  ORG: timescaledev
+  TS_VERSION: main
+  PLATFORM: linux/amd64
+
+jobs:
+  image-analysis:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}-analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write #write permission is need to delete actions 
+    strategy:
+      max-parallel: 1  # Running sequentially to add comments to the comment artifact without overwriting
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ["bitnami", "normal"]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v3
+
+      - name: Download image built from the PR
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          workflow: smoke-test.yml
+          name: ${{matrix.type}}-${{ github.event.workflow_run.head_sha  }} 
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: fail
+          skip_unpack: true # Docker images are too big to unpack with this action
+      - name: unzip the image artifact 
+        run: |
+          unzip ${{matrix.type}}-${{ github.event.workflow_run.head_sha }}.zip
+
+      - name: Load image into docker
+        run: |
+          cat ./${{matrix.type}}-${{ github.event.workflow_run.head_sha  }}.tar  | docker import - smoketest-image
+      
+      # set up dependency for github scripts
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: |
+          npm install fs
+
+      - name: Download metrics of main branch
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          workflow: image-analysis.yml
+          name: image-metric-${{matrix.type}}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+
+      - name: Download comments artifact 
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          workflow: image-analysis.yml
+          name: image-analysis-comments
+          check_artifacts: true
+          search_artifacts: true
+          workflow_conclusion: ""  # Consider current successful runs of matrix jobs 
+          if_no_artifact_found: warn
+
+      - name: Analyse image
+        uses: actions/github-script@v6.4.1
+        with:
+          workspace: ${{ github.workspace }}
+          image-type: ${{matrix.type}}
+          script: |
+            const fs = require('fs')
+            const script = require('./image_size.js')
+            console.log(script({github, context, exec,core,fs}))
+
+      - name: Upload the updated comments  
+        uses: actions/upload-artifact@v3
+        if: github.event.workflow_run.event == 'pull_request'
+        with:
+          name: image-analysis-comments
+          path: comments.json
+          if-no-files-found: error
+
+      - name: Upload metrics from main branch
+        uses: actions/upload-artifact@v3
+        if: github.event.workflow_run.event == 'push'
+        with:
+          name: image-metric-${{matrix.type}}
+          path: image-metrics-${{matrix.type}}.json
+          if-no-files-found: error
+
+        
+      - name: Delete docker image artifact
+        uses: jimschubert/delete-artifacts-action@v1
+        with:
+          log_level: "debug"
+          artifact_name: ${{matrix.type}}-${{ github.event.workflow_run.head_sha  }}
+          min_bytes: "0"
