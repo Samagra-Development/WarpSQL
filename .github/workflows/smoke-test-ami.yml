@@ -12,11 +12,14 @@ on:
 
 env:
   TF_IN_AUTOMATION: true
+  AWS_REGION : "us-east-1"
 
 jobs:
   smoketest-ami:
     name: PG${{ matrix.pg }}-${{ matrix.type }}
     runs-on: ubuntu-latest
+    permissions:
+        id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -25,6 +28,13 @@ jobs:
     steps:
       - name: Check out the source
         uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2.2.0
+        with:
+          role-to-assume: arn:aws:iam::052187009926:role/Github-Warpsql-Action
+          role-session-name: Warpsql-${{github.ref}}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
