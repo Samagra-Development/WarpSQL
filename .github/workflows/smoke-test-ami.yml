@@ -34,7 +34,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2.2.0
         with:
           role-to-assume: arn:aws:iam::052187009926:role/Github-Warpsql-Action
-          role-session-name: Warpsql-${{github.ref}}
+          role-session-name: ${{github.workflow}}-${{github.run_id}} 
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Packer
