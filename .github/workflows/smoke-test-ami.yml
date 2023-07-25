@@ -51,6 +51,7 @@ jobs:
           echo "WARPSQL_AMI_ID=$(cat warpsql-ami.json | jq -r '.builds[0].artifact_id' |cut -d':' -f2)" >> $GITHUB_ENV
         env:
           PACKER_LOG: 1
+          PACKER_GITHUB_API_TOKEN: ${{github.token}}
 
       # check and run the terraform
       - uses: hashicorp/setup-terraform@v2
