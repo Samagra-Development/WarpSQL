@@ -81,6 +81,7 @@ check_env_variables CITUS_VERSION
         lz4-dev \
         zstd-dev \
         clang15 \
+        tar \
         krb5-dev \
         icu-dev \
         libxslt-dev \

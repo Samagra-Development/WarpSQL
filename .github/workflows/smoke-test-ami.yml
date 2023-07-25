@@ -1,0 +1,106 @@
+name: Smoke Test ami Image
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  TF_IN_AUTOMATION: true
+
+jobs:
+  smoketest-ami:
+    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [15]
+        type: ["alpine"]
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v3
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 'latest'
+
+      # build the packer image
+      - name: Packer Init
+        run: cd packer && packer init .
+
+      - name: build the image
+        run: |
+          packer build  -only="warpsql.amazon-ebs.${{matrix.type}}"  warpsql.pkr.hcl
+          echo "WARPSQL_AMI_ID=$(cat warpsql-ami.json | jq -r '.builds[0].artifact_id' |cut -d':' -f2)" >> $GITHUB_ENV
+
+        env:
+          PACKER_LOG: 1
+
+      # check and run the terraform
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform fmt
+        run: cd terraform && terraform fmt -check 
+        continue-on-error: false
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -var ami_id=${{env.WARPSQL_AMI_ID}} -no-color
+        continue-on-error: false
+      # add could init for entry point
+      - name: Terraform Apply       # use the plan feature
+        run: terraform apply -var ami_id=${{env.WARPSQL_AMI_ID}} -auto-approve 
+
+      - run: echo "PGHOST=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+      
+      - name: Install psql
+        run: sudo apt install -y postgresql-client 
+
+      - name: Run the smoke test
+        env:
+          PGPORT: "5432"
+          PGUSER: "postgres"
+          PGHOST: ${{env.PGHOST}}
+        run: |
+          env
+          set -eu
+          for _ in {1..400}
+          do
+            if psql -c "select 1"
+            then
+            bash ./test/smoke_test/smoke_test.sh
+              break
+            fi
+            sleep 1
+          done
+          if ! psql -c "select 1"
+          then
+            echo "Cannot connect to PostgreSQL"
+            exit 1
+          fi
+
+      - name: Destroy infra
+        if: ${{ always() }}
+        run: |
+          cd terraform && terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}}
+          snapshots="$(aws ec2 describe-images --image-ids ${{env.WARPSQL_AMI_ID}} --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
+          aws ec2 deregister-image --image-id ${{env.WARPSQL_AMI_ID}}
+          for snapshot in $snapshots
+          do 
+            aws ec2 delete-snapshot --snapshot-id $snapshot
+          done
