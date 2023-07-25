@@ -10,7 +10,9 @@ on:
     branches:
       - main
       - terraform_deployment
-
+defaults:
+  run:
+    shell: bash
 env:
   TF_IN_AUTOMATION: true
   AWS_REGION : "us-east-1"
@@ -78,6 +80,7 @@ jobs:
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
       - run: echo "PGHOST=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
       
       - name: Install psql
         run: sudo apt install -y postgresql-client 
@@ -108,12 +111,14 @@ jobs:
       - name: Destroy infra
         if: ${{ always() }}
         run: |
-          cd terraform && terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}}
+          terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}}
           snapshots="$(aws ec2 describe-images --image-ids ${{env.WARPSQL_AMI_ID}} --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
+          echo "Deregistering AMI ${{env.WARPSQL_AMI_ID}}"
           aws ec2 deregister-image --image-id ${{env.WARPSQL_AMI_ID}}
           for snapshot in $snapshots
           do 
             aws ec2 delete-snapshot --snapshot-id $snapshot
+            echo "Deleted $snapshot"
           done
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
         
