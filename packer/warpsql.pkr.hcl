@@ -16,9 +16,12 @@ variable "image_repository" {
   type    = string
   default = "warpsql"
 }
-// variable "ami_name"{
 
-// }
+variable "ami_name"{
+type = string
+default= "warpsql"
+}
+
 # Tags to be applied to the built image
 variable "image_tags" {
   type    = list(string)
@@ -31,7 +34,7 @@ variable "region" {
 }
 
 source "amazon-ebs" "alpine" {
-  ami_name        = "warsql-alpine"
+  ami_name        = var.ami_name
   instance_type   = "t2.micro"
   region          = var.region
   skip_create_ami = false
