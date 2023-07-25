@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - main
+      - terraform_deployment
 
 env:
   TF_IN_AUTOMATION: true
