@@ -178,7 +178,7 @@ check_env_variables PG_VER
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 
     apt update 
     apt-get update -y --fix-missing 
-    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev strace pkg-config lsb-release wget software-properties-common gnupg libreadline-dev libgdbm-dev libssl1.0-dev 
+    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev pkg-config libreadline-dev libgdbm-dev libssl1.0-dev
     wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz 
     tar -xzvf openssl-1.0.2l.tar.gz 
     cd openssl-1.0.2l 
@@ -206,6 +206,9 @@ check_env_variables PG_VER
     git clone https://github.com/zombodb/zombodb.git 
     cd zombodb
     export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release
+    cd / 
+    apt-get autoremove --purge -y git curl clang-14  gcc make build-essential  wget
+    rm -rf .cargo .gem  openssl-1.0.2l .rustup openssl-1.0.2l.tar.gz
     sed -r -i  's/[#]*\s*(POSTGRESQL_SHARED_PRELOAD_LIBRARIES)\s*=\s*"(.*)"/\1="zombodb,\2"/;s/,"/"/' /opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh
 }
 
