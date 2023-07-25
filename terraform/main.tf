@@ -78,7 +78,7 @@ resource "aws_key_pair" "deployer" {
 resource "local_sensitive_file" "pem_file" {
   filename        = pathexpand("./${aws_key_pair.deployer.key_name}.pem")
   file_permission = "600"
-  content = tls_private_key.warpsql-rsa.private_key_pem
+  content         = tls_private_key.warpsql-rsa.private_key_pem
 }
 resource "aws_instance" "web" {            # add cloud-inint scripts to start the postgres
   ami                         = var.ami_id # besecific with thw name

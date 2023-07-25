@@ -14,6 +14,7 @@ on:
 env:
   TF_IN_AUTOMATION: true
   AWS_REGION : "us-east-1"
+  TERRAFORM_DIRECTORY: ${{github.workspace}}/terraform
 
 jobs:
   smoketest-ami:
@@ -43,14 +44,11 @@ jobs:
           version: 'latest'
 
       # build the packer image
-      - name: Packer Init
-        run: cd packer && packer init .
-
-      - name: build the image
+      - name: Build the image
         run: |
+          cd packer && packer init .
           packer build  -only="warpsql.amazon-ebs.${{matrix.type}}"  warpsql.pkr.hcl
           echo "WARPSQL_AMI_ID=$(cat warpsql-ami.json | jq -r '.builds[0].artifact_id' |cut -d':' -f2)" >> $GITHUB_ENV
-
         env:
           PACKER_LOG: 1
 
@@ -58,24 +56,25 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
 
       - name: Terraform fmt
-        run: cd terraform && terraform fmt -check 
-        continue-on-error: false
-
+        run: terraform fmt -check 
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
       - name: Terraform Init
-        id: init
         run: terraform init
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
       - name: Terraform Plan
         id: plan
         run: terraform plan -var ami_id=${{env.WARPSQL_AMI_ID}} -no-color
-        continue-on-error: false
-      # add could init for entry point
-      - name: Terraform Apply       # use the plan feature
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
+
+      - name: Terraform Apply       
         run: terraform apply -var ami_id=${{env.WARPSQL_AMI_ID}} -auto-approve 
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
       - run: echo "PGHOST=$(terraform output -raw public_ip)" >> $GITHUB_ENV
       
@@ -115,3 +114,5 @@ jobs:
           do 
             aws ec2 delete-snapshot --snapshot-id $snapshot
           done
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
+        
