@@ -9,12 +9,12 @@ on:
   push:
     branches:
       - main
-      - terraform_deployment
+      - terraform_deployment # TODO: remove it
 defaults:
   run:
     shell: bash
 env:
-  AWS_REGION : "us-east-1"
+  AWS_REGION: "us-east-1"
   TERRAFORM_DIRECTORY: ${{github.workspace}}/terraform
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     name: PG${{ matrix.pg }}-${{ matrix.type }}
     runs-on: ubuntu-latest
     permissions:
-        id-token: write
+      id-token: write # required for aws credentials
     strategy:
       fail-fast: false
       matrix:
@@ -40,13 +40,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2.2.0
         with:
           role-to-assume: arn:aws:iam::052187009926:role/Github-Warpsql-Action
-          role-session-name: ${{github.run_id}} 
+          role-session-name: ${{github.run_id}}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
         with:
-          version: 'latest'
+          version: "latest"
 
       # build the packer image
       - name: Build the image
@@ -60,9 +60,11 @@ jobs:
 
       # check and run the terraform
       - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
 
       - name: Terraform fmt
-        run: terraform fmt -check 
+        run: terraform fmt -check
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
       - name: Terraform Init
         run: terraform init
@@ -78,15 +80,16 @@ jobs:
         run: terraform plan -var ami_id=${{env.WARPSQL_AMI_ID}} -no-color
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
-      - name: Terraform Apply       
-        run: terraform apply -var ami_id=${{env.WARPSQL_AMI_ID}} -auto-approve 
+      - name: Terraform Apply
+        run: terraform apply -var ami_id=${{env.WARPSQL_AMI_ID}} -auto-approve
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
-      - run: sleep 15m
+
+      
       - run: echo "PGHOST=$(terraform output -raw public_ip)" >> $GITHUB_ENV
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
-      
+
       - name: Install psql
-        run: sudo apt install -y postgresql-client 
+        run: sudo apt install -y postgresql-client
 
       - name: Run the smoke test
         env:
@@ -114,7 +117,9 @@ jobs:
       - name: Destroy infra
         if: ${{ always() }}
         run: |
-          terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}}
+          # Destroy the instance
+          terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}} 
+          # Destroy the ami and snapshot
           snapshots="$(aws ec2 describe-images --image-ids ${{env.WARPSQL_AMI_ID}} --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
           echo "Deregistering AMI ${{env.WARPSQL_AMI_ID}}"
           aws ec2 deregister-image --image-id ${{env.WARPSQL_AMI_ID}}
@@ -124,4 +129,3 @@ jobs:
             echo "Deleted $snapshot"
           done
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
-        
