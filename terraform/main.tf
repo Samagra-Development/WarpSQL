@@ -80,8 +80,8 @@ resource "local_sensitive_file" "pem_file" {
   file_permission = "600"
   content         = tls_private_key.warpsql-rsa.private_key_pem
 }
-resource "aws_instance" "web" {            
-  ami                         = var.ami_id 
+resource "aws_instance" "web" {
+  ami                         = var.ami_id
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
