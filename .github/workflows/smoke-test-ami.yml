@@ -96,6 +96,7 @@ jobs:
           PGPORT: "5432"
           PGUSER: "postgres"
           PGHOST: ${{env.PGHOST}}
+          PGPASSWORD: "warpsql" 
         run: |
           env
           set -eu
