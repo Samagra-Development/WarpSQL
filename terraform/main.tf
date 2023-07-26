@@ -80,8 +80,8 @@ resource "local_sensitive_file" "pem_file" {
   file_permission = "600"
   content         = tls_private_key.warpsql-rsa.private_key_pem
 }
-resource "aws_instance" "web" {            # add cloud-inint scripts to start the postgres
-  ami                         = var.ami_id # besecific with thw name
+resource "aws_instance" "web" {            
+  ami                         = var.ami_id 
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
@@ -91,7 +91,7 @@ resource "aws_instance" "web" {            # add cloud-inint scripts to start th
   #cloud-config
 
   bootcmd:
-    - "POSTGRES_PASSWORD=password PGDATA=/var/lib/postgesql /alpine-aws-entrypoint.sh postgres > /Warpsql.log  2>&1 &"
+    - "POSTGRES_PASSWORD=warpsql PGDATA=/var/lib/postgesql /alpine-aws-entrypoint.sh postgres > /Warpsql.log  2>&1 &"
   EOF
   tags = {
     Name = "WarpSQL"
