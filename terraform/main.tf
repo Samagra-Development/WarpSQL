@@ -73,7 +73,7 @@ resource "tls_private_key" "warpsql-rsa" {
   rsa_bits  = 4096
 }
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key" 
+  key_name   = "deployer-key"
   public_key = tls_private_key.warpsql-rsa.public_key_openssh
 }
 resource "local_sensitive_file" "pem_file" {

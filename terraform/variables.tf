@@ -31,5 +31,5 @@ variable "ami_id" {
 variable "warpsql_password" {
   description = "The password for Warpsql PostgreSQL connection"
   type        = string
-  default = "warpsql"
+  default     = "warpsql"
 }
