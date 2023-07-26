@@ -1,7 +1,7 @@
 name: Smoke Test ami Image
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{github.ref}}
   cancel-in-progress: true
 
 on:
@@ -88,7 +88,6 @@ jobs:
       - name: Save the instance ip
         run: echo "PGHOST=$(terraform output -raw public_ip)" >> $GITHUB_ENV
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
-      - run: sleep 10m
       - name: Install psql
         run: sudo apt install -y postgresql-client
 
