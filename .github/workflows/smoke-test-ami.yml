@@ -111,6 +111,11 @@ jobs:
         run: |
           # Destroy the instance
           terraform destroy -auto-approve -var ami_id=${{env.WARPSQL_AMI_ID}} 
+        working-directory: ${{env.TERRAFORM_DIRECTORY}}
+
+      - name: Destroy AMI and Snapshot
+        if: ${{ always() }}
+        run: |
           # Destroy the ami and snapshot
           snapshots="$(aws ec2 describe-images --image-ids ${{env.WARPSQL_AMI_ID}} --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
           echo "Deregistering AMI ${{env.WARPSQL_AMI_ID}}"
