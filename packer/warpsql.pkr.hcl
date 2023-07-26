@@ -7,7 +7,7 @@ packer {
     }
     amazon = {
       version = ">= 1.2.6"
-      source = "github.com/hashicorp/amazon"
+      source  = "github.com/hashicorp/amazon"
     }
   }
 }
@@ -17,9 +17,9 @@ variable "image_repository" {
   default = "warpsql"
 }
 
-variable "ami_name"{
-type = string
-default= "warpsql"
+variable "ami_name" {
+  type    = string
+  default = "warpsql"
 }
 
 # Tags to be applied to the built image
@@ -59,7 +59,7 @@ source "amazon-ebs" "alpine" {
 
 variable "extentions" {
   type    = string
-  default = "timescaledb,pgvector,postgis,pg_repack,pgautofailover,hll,citus"
+  default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus"
 }
 source "docker" "alpine" {
   image  = "postgres:15-alpine"
@@ -198,9 +198,9 @@ build {
   }
 
   post-processor "manifest" {
-    output = "warpsql-ami.json"
+    output     = "warpsql-ami.json"
     strip_path = true
-    only = ["amazon-ebs.alpine"]
+    only       = ["amazon-ebs.alpine"]
   }
 
 }
