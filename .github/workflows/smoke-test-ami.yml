@@ -48,7 +48,7 @@ jobs:
       - name: Build the image
         run: |
           cd packer && packer init .
-          packer build  -only="warpsql.amazon-ebs.${{matrix.type}}" -var ami_name="warpsql-${{matrix.type}}-${{github.ref}}-${{github.run_id}}"   warpsql.pkr.hcl
+          packer build  -only="warpsql.amazon-ebs.${{matrix.type}}" -var ami_name="warpsql-${{matrix.type}}-${{github.ref}}-${{github.run_id}}" -var extensions="timescaledb,pgvector,postgis,pg_repack,pgautofailover,hll,citus"  warpsql.pkr.hcl
           echo "WARPSQL_AMI_ID=$(cat warpsql-ami.json | jq -r '.builds[0].artifact_id' |cut -d':' -f2)" >> $GITHUB_ENV
         env:
           PACKER_LOG: 1
