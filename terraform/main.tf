@@ -42,9 +42,8 @@ resource "aws_route_table_association" "rta_subnet_public" {
 }
 
 resource "aws_security_group" "sg_22_80" {
-  name   = "sg_22"
-  vpc_id = aws_vpc.vpc.id
-
+  name_prefix = "warpsql"
+  vpc_id      = aws_vpc.vpc.id
   # SSH access from the VPC
   ingress {
     from_port   = 22
@@ -73,8 +72,8 @@ resource "tls_private_key" "warpsql-rsa" {
   rsa_bits  = 4096
 }
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
-  public_key = tls_private_key.warpsql-rsa.public_key_openssh
+  key_name_prefix = "warpsql"
+  public_key      = tls_private_key.warpsql-rsa.public_key_openssh
 }
 resource "local_sensitive_file" "pem_file" {
   # write the private key to local for ssh access
