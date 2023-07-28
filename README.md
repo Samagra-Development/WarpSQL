@@ -54,6 +54,7 @@ Before using this Packer template, ensure that you have the following prerequisi
 
 - [Packer](https://www.packer.io/) 
 - [Docker](https://www.docker.com/) (for building Docker images)
+- AWS 
 
 ### Usage
 
@@ -64,23 +65,22 @@ To build the WarpSQL image using the Packer template, follow these steps:
    ```shell
     git clone https://github.com/Samagra-Development/WarpSQL.git
     cd WarpSQL/packer
-2. Build the images:
-    ```shell 
-      packer build warpsql.pkr.hcl
-    ``` 
-To build only the Alpine image, you can use the `-only` option:
+    ```
+2. Build the image:
 
-  ```shell
-  packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
-  ```
+   ```shell
+    packer build -only=warpsql.<platform>.alpine warpsql.pkr.hcl
+    ```
+
   By default, all supported [extensions](#list-of-supported-extensions) are installed. If you want to install specific extensions, you can provide the `extensions` variable:
+  
   ```shell
   packer build -var extensions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
   ```
 
-  Note that currently only the `Docker` source has been added to the template.
+  Note that currently only the `Docker` and `AWS` platform has been added to the template.
 
-You can further customize the image repository and tags by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
+You can further customize the image repository and tags of `docker` images by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
 ```shell
 packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
 ```
