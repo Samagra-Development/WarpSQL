@@ -11,10 +11,9 @@ packer {
     }
   }
 }
-# # This variable defines the repository where the built image will be committed.
-variable "image_repository" {
+variable "extensions" {
   type    = string
-  default = "warpsql"
+  default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus"
 }
 
 variable "ami_name" {
@@ -22,12 +21,6 @@ variable "ami_name" {
   default = "warpsql"
 }
 
-# Tags to be applied to the built image
-variable "image_tags" {
-  type    = list(string)
-  default = ["latest"]
-
-}
 variable "region" {
   type    = string
   default = "us-east-1"
@@ -53,14 +46,23 @@ source "amazon-ebs" "alpine" {
     volume_type           = "gp2"
     delete_on_termination = true
   }
-  // user_data_file = ""
   ssh_username = "alpine"
 }
 
-variable "extentions" {
+# The repository where the built docker image will be committed.
+variable "image_repository" {
   type    = string
-  default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus"
+  default = "warpsql"
 }
+
+
+# Tags to be applied to the built image
+variable "image_tags" {
+  type    = list(string)
+  default = ["latest"]
+
+}
+
 source "docker" "alpine" {
   image  = "postgres:15-alpine"
   commit = true
@@ -94,13 +96,14 @@ build {
   ]
 
   provisioner "file" {
-    source      = "./alpine-aws-entrypoint.sh"
-    destination = "/tmp/alpine-aws-entrypoint.sh"
+    source      = "./aws-alpine-entrypoint.sh"
+    destination = "/tmp/aws-alpine-entrypoint.sh"
     only        = ["amazon-ebs.alpine"]
   }
 
   provisioner "shell" {
     valid_exit_codes = ["0"]
+    # preserve the existing environment variables
     inline = [
       "echo 'permit nopass keepenv :wheel' | doas  tee /etc/doas.d/wheel.conf",
       "doas apk add bash"
@@ -109,7 +112,7 @@ build {
   }
 
   provisioner "shell" {
-    script          = "aws-alpine-postgres-install.sh"
+    script          = "aws-alpine-postgres-install.sh" # install PostgreSQL on the image
     execute_command = "chmod +x {{.Path}};  {{ .Vars }} doas {{.Path}}"
     only            = ["amazon-ebs.alpine"]
 
@@ -118,7 +121,7 @@ build {
   provisioner "shell" {
     valid_exit_codes = []
     environment_vars = [
-      "EXTENSIONS=${var.extentions}",
+      "EXTENSIONS=${var.extensions}",
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
@@ -129,7 +132,7 @@ build {
       "POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b",
       "TS_VERSION=main"
     ]
-    script          = "postgres-alpine.sh"
+    script          = "postgres-alpine.sh" # install all the extensions 
     execute_command = "chmod +x {{.Path}};  {{ .Vars }} doas {{.Path}}"
     only            = ["amazon-ebs.alpine"]
 
@@ -138,7 +141,7 @@ build {
   # provisioners for the Alpine image
   provisioner "shell" {
     environment_vars = [
-      "EXTENSIONS=${var.extentions}",
+      "EXTENSIONS=${var.extensions}",
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
@@ -163,7 +166,7 @@ build {
 
   provisioner "shell" {
     environment_vars = [
-      "EXTENSIONS=${var.extentions}",
+      "EXTENSIONS=${var.extensions}",
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
@@ -182,9 +185,9 @@ build {
   provisioner "shell" {
     valid_exit_codes = ["0"]
     inline = [
-      "doas mv /tmp/alpine-aws-entrypoint.sh /",
-      "doas chown root:wheel /alpine-aws-entrypoint.sh",
-      "doas chmod +x /alpine-aws-entrypoint.sh"
+      "doas mv /tmp/aws-alpine-entrypoint.sh /",
+      "doas chown root:wheel /aws-alpine-entrypoint.sh",
+      "doas chmod +x /aws-alpine-entrypoint.sh"
     ]
     only = ["amazon-ebs.alpine"]
   }

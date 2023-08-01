@@ -52,6 +52,7 @@ resource "aws_security_group" "sg_22_80" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  # postgres access
   ingress {
     from_port   = 5432
     to_port     = 5432
@@ -72,10 +73,11 @@ resource "tls_private_key" "warpsql-rsa" {
   rsa_bits  = 4096
 }
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key" ## TODO: generate the new pair and pass it also delete  the old one(DONE)
+  key_name   = "deployer-key" 
   public_key = tls_private_key.warpsql-rsa.public_key_openssh
 }
 resource "local_sensitive_file" "pem_file" {
+  # write the private key to local for ssh access
   filename        = pathexpand("./${aws_key_pair.deployer.key_name}.pem")
   file_permission = "600"
   content         = tls_private_key.warpsql-rsa.private_key_pem
@@ -91,7 +93,7 @@ resource "aws_instance" "web" {
   #cloud-config
 
   bootcmd:
-    - "POSTGRES_PASSWORD=warpsql PGDATA=/var/lib/postgesql /alpine-aws-entrypoint.sh postgres > /Warpsql.log  2>&1 &"
+    - "POSTGRES_PASSWORD=${var.warpsql_password} PGDATA=/var/lib/postgesql/data /aws-alpine-entrypoint.sh postgres > /Warpsql.log  2>&1 &"
   EOF
   tags = {
     Name = "WarpSQL"

@@ -75,7 +75,7 @@ To build only the Alpine image, you can use the `-only` option:
   ```
   By default, all supported [extensions](#list-of-supported-extensions) are installed. If you want to install specific extensions, you can provide the `extensions` variable:
   ```shell
-  packer build -var extentions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
+  packer build -var extensions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
   ```
 
   Note that currently only the `Docker` source has been added to the template.

@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - terraform_deployment # TODO: remove it
 defaults:
   run:
     shell: bash
@@ -32,10 +31,7 @@ jobs:
       - name: Check out the source
         uses: actions/checkout@v3
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2.2.0
         with:
@@ -75,11 +71,6 @@ jobs:
         run: terraform validate -no-color
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
 
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -var ami_id=${{env.WARPSQL_AMI_ID}} -no-color
-        working-directory: ${{env.TERRAFORM_DIRECTORY}}
-
       - name: Terraform Apply
         run: terraform apply -var ami_id=${{env.WARPSQL_AMI_ID}} -auto-approve
         working-directory: ${{env.TERRAFORM_DIRECTORY}}
@@ -100,7 +91,7 @@ jobs:
         run: |
           env
           set -eu
-          for _ in {1..400}
+          for _ in {1..300}
           do
             if psql -c "select 1"
             then

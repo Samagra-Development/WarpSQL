@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Source: https://github.com/docker-library/postgres/blob/master/15/alpine3.18/Dockerfile
 set -eux
 mkdir /docker-entrypoint-initdb.d
 # Set environment variables
