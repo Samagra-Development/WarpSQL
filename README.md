@@ -4,7 +4,7 @@ Opinionated extensions to Postgres packaged as a single docker deployment. Why i
 
 Certified as Indie Hacker's best friend!!!
 
-### Current and future supported extensions
+## Current and future supported extensions
 
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
@@ -12,11 +12,28 @@ Certified as Indie Hacker's best friend!!!
 - [x] [PostGIS](https://postgis.net)
 - [x] [ZomboDB](https://github.com/zombodb/zombodb)
 - [ ] [PLV8](https://github.com/plv8/plv8)
-- [ ] [Pg Repack](https://github.com/reorg/pg_repack)
+- [X] [Pg Repack](https://github.com/reorg/pg_repack)
+- [x] [PG Auto Failover](https://pg-auto-failover.readthedocs.io/en/main/)
+- [x] [HyperLogLog](https://github.com/citusdata/postgresql-hll)
 
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 
-### Usage with Compose
+
+## Table of Contents
+- [Usage with Docker Compose](#usage-with-compose)
+- [Packer Template](#packer-template)
+   - [Prerequisites](#prerequisites)
+   - [Usage](#usage)
+   - [List of Supported Extensions](#list-of-supported-extensions)
+- [Terraform](#terraform)
+- [Contribution](#contribution)
+   - [Gitpod](#gitpod)
+   - [GitHub Codespaces](#github-codespaces)
+   - [Ensure CI Passes](#ensure-ci-passes)
+- [Maintainers](#maintainers)
+
+
+## Usage with Compose
 
 ```yaml
 version: '3.6'
@@ -44,16 +61,21 @@ By utilizing WarpSQL, you can benefit from the following:
 - *Extensibility*: While WarpSQL already supports a range of extensions, it aims to expand its offerings to include even more powerful tools in the future, such as ZomboDB, PLV8, and Pg Repack.
 Get started with WarpSQL today and experience the convenience of a comprehensive Postgres solution.
 
-## PostgreSQL Image Packer Template
+## WarpSQL  Packer Template
 
-This repository contains a Packer template for building the WarpSQL image with multiple sources and provisioners. The template supports building images based on both the Alpine and Bitnami PostgreSQL images.
+This repository contains a Packer template for building the WarpSQL image for multiple platform. The template supports building WarpSQL based on both the Alpine and Bitnami PostgreSQL images.
 
-#### Prerequisites
+
+### Supported platforms 
+- `docker`
+-  `aws` (only `alpine` variant is supported for now ) 
+### Prerequisites
 
 Before using this Packer template, ensure that you have the following prerequisites installed:
 
 - [Packer](https://www.packer.io/) 
-- [Docker](https://www.docker.com/) (for building Docker images)
+- [Docker](https://www.docker.com/) for building Docker images
+- [AWS credentials](https://developer.hashicorp.com/packer/plugins/builders/amazon#authentication) for AWS AMI images 
 
 ### Usage
 
@@ -64,27 +86,23 @@ To build the WarpSQL image using the Packer template, follow these steps:
    ```shell
     git clone https://github.com/Samagra-Development/WarpSQL.git
     cd WarpSQL/packer
-2. Build the images:
-    ```shell 
-      packer build warpsql.pkr.hcl
-    ``` 
-To build only the Alpine image, you can use the `-only` option:
+    ```
+2. Build the alpine image:
 
-  ```shell
-  packer build -only=warpsql.docker.alpine warpsql.pkr.hcl
-  ```
+   ```shell
+    packer build -only=warpsql.<platform>.alpine warpsql.pkr.hcl
+    ```
+
   By default, all supported [extensions](#list-of-supported-extensions) are installed. If you want to install specific extensions, you can provide the `extensions` variable:
+  
   ```shell
-  packer build -var extentions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
+  packer build -var extensions='pg_repack,hll'  -only warpsql.docker.alpine warpsql.pkr.hcl  
   ```
 
-  Note that currently only the `Docker` source has been added to the template.
-
-You can further customize the image repository and tags by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
+You can further customize the image repository and tags of `docker` images by providing values for the `image_repository` and `image_tags` variables using the `-var` option. Here's an example command:
 ```shell
 packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" warpsql.pkr.hcl
 ```
-
 ### List of supported extensions
 |Extension       | Identifier       |
 |----------------|------------------|
@@ -96,6 +114,37 @@ packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" wa
 |[PgRepack](https://github.com/reorg/pg_repack)        | `pg_repack`      |
 |[PG Auto Failover](https://github.com/hapostgres/pg_auto_failover)| `pgautofailover` |
 |[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
+
+## Terraform 
+After building the WarpSQL image using Packer, you can use Terraform to start a WarpSQL instance with the image you built.
+
+Currently, only the `aws` platform is supported for Terraform:
+```shell
+cd terraform/
+terraform apply -var ami_id=<AMI_id>
+```
+Make sure to replace `<AMI_id>` with the  AMI ID generated by Packer during the image build process.
+
+After the instance is deployed, retrieve the public IP  using Terraform.
+
+```shell
+terraform output -raw public_ip
+```
+Connect to the WarpSQL instance using the psql command.
+
+```shell
+psql -U postgres -h <IP>
+```
+Replace <IP> with the public IP of the instance. The default password is `warpsql`. You can change the password by providing the `warpsql_password` variable during the `terraform apply`
+
+To connect to the instance using `ssh`, use the pem file generated by Terraform.
+
+```shell
+ssh -i <pem file> alpine@<IP>
+```
+
+Replace `<pem_file>` with the path to the generated `pem` file and `<IP>` with the instance's public IP. The `alpine` user has [doas](https://wiki.archlinux.org/title/Doas) privileges.
+
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
