@@ -1,0 +1,82 @@
+---
+- hosts: all
+  become: true
+  debugger: on_failed #TODO change it to on failing
+  vars:
+      warpsql_ip: "{{warpsql_ip}}"
+      # barman_ip: "{{barman_ip}}"
+    
+
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: 
+        - docker-ce
+        - docker-ce-cli 
+        - containerd.io 
+        - docker-buildx-plugin
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+    - name: Copy file with owner and permissions
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../../" 
+        dest: /tmp/warpsql
+    - name: add the ip of warpsql
+      ansible.builtin.command:
+         cmd: sed -i "s/host=[^ ]*/host={{warpsql_ip}}/" /tmp/warpsql/terraform/aws/config/barman/barman.d/pg.conf
+    - name: Pull an image
+      community.docker.docker_image:
+        name: ubcctlt/barman
+        source: pull
+    
+    - name: Create default containers
+      community.docker.docker_container:
+        name: "WarpSQL-barman" 
+        image: "ubcctlt/barman" 
+        state: started 
+        ports: 
+        - "5432:5432"
+        keep_volumes: true
+        volumes:
+        - /tmp/warpsql/terraform/aws/config/barman:/etc/barman
+        - barman:/var/lib/barman
+        env:
+          DB_SUPERUSER: barman
+          DB_SUPERUSER_PASSWORD: barman
+          DB_REPLICATION_USER: streaming_barman
+          DB_REPLICATION_PASSWORD: streaming_barman
+          DB_HOST: "{{warpsql_ip}}"
+

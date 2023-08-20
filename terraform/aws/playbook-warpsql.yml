@@ -1,0 +1,89 @@
+---
+- hosts: all
+  become: true
+  debugger: on_failed #TODO change it to on failing
+  # vars:
+  #   container_count: 4
+  #   default_container_name: docker
+  #   default_container_image: ubuntu
+  #   default_container_command: sleep 1d
+
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: 
+        - docker-ce
+        - docker-ce-cli 
+        - containerd.io 
+        - docker-buildx-plugin
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    # - name: Pull default Docker image
+    #   community.docker.docker_image:
+    #     name: "{{ default_container_image }}"
+    #     source: pull
+    - name: Copy file with owner and permissions
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../../" 
+        dest: /tmp/warpsql
+        # owner: ubuntu
+        # group: ubuntu
+        # mode: '0644'
+    # - name: Build the Docker container
+    #   command: 
+    #     chdir: /tmp/warpsql
+    #     cmd:  make
+    - name: Pull an image
+      community.docker.docker_image:
+        name: d3bug77/postgres:latest
+        source: pull
+    - name: Create default containers
+      community.docker.docker_container:
+        name: "WarpSQL" 
+        image: "d3bug77/postgres:latest" 
+        state: started 
+        command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+        ports: 
+        - "5432:5432"
+        keep_volumes: true
+        volumes:
+        - /tmp/warpsql/terraform/aws/config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+        - /tmp/warpsql/terraform/aws/config/init:/docker-entrypoint-initdb.d/
+        - postgres:/var/lib/postgresql
+        env:
+          POSTGRES_PASSWORD: "warpsql"
+
