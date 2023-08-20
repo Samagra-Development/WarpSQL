@@ -97,10 +97,10 @@ packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" wa
 |[PG Auto Failover](https://github.com/hapostgres/pg_auto_failover)| `pgautofailover` |
 |[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
 
-# Disaster recovery 
+## Disaster recovery 
 WarpSQL includes [`barman`](https://github.com/EnterpriseDB/barman) as the disaster recovery solution\
-supported platform : `docker`
-
+supported platform : `docker`,`aws`
+### Docker
 To launch WarpSQL with Barman, run:
 ```shell
 cd terraform/docker
@@ -115,6 +115,17 @@ to only destroy the containers run you can specify the target
 ```shell
 terraform destroy -target module.warpsql-containers
 ```
+
+### AWS 
+Make sure you have `AWS` credential and `Ansible` installed and setup.
+
+To launch WarpSQL with Barman, run:
+```shell
+cd terraform/aws
+terraform apply
+```
+
+This launches two EC2 instances running PostgreSQL and Barman as Docker containers on Ubuntu Host OS.
 
 ## Contribution
 
