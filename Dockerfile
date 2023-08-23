@@ -341,3 +341,24 @@ RUN set -eux \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
     && apk del .postgresql-hll-build-deps 
 
+# Install SSH server
+RUN apk add --no-cache openssh-server 
+
+# Set the root password for the SSH server (CHANGE THIS PASSWORD!)
+RUN echo 'root:your_password_here' | chpasswd
+
+# Permit root login via SSH
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Enable password authentication
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN passwd -u postgres
+
+# SSH port (optional, change if needed)
+EXPOSE 22
+RUN ssh-keygen -A
+
+COPY entrypoint.sh  /entrypoint.sh
+# RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT [ "/entrypoint.sh" ]

@@ -59,20 +59,22 @@
          cmd: sed -i "s/host=[^ ]*/host={{warpsql_ip}}/" /tmp/warpsql/terraform/aws/config/barman/barman.d/pg.conf
     - name: Pull an image
       community.docker.docker_image:
-        name: ubcctlt/barman
+        name: d3bug77/barman 
         source: pull
     
     - name: Create default containers
       community.docker.docker_container:
         name: "WarpSQL-barman" 
-        image: "ubcctlt/barman" 
+        image: "d3bug77/barman" 
         state: started 
         ports: 
         - "5432:5432"
+        - "7000:22"
         keep_volumes: true
         volumes:
         - /tmp/warpsql/terraform/aws/config/barman:/etc/barman
         - barman:/var/lib/barman
+        - /tmp/warpsql/terraform/aws/ssh:/tmp/ssh:ro
         env:
           DB_SUPERUSER: barman
           DB_SUPERUSER_PASSWORD: barman
