@@ -16,11 +16,6 @@
     - name: Wait for system to become reachable 
       ansible.builtin.wait_for_connection:
         timeout: 300
-    # - name: Install aptitude
-    #   apt:
-    #     name: aptitude
-    #     state: latest
-    #     update_cache: true
     - name: Install required system packages
       apt:
         pkg:
@@ -104,11 +99,6 @@
         cmd: docker exec WarpSQL-barman sh -c "barman list-backups pg" 
       register: barman_backups
 
-    # - name: debug
-    #   ansible.builtin.debug:
-    #     msg: "{{ barman_backups.stdout }}"
-
-
     - name: setting fact if a backup is present
       ansible.builtin.set_fact:
         barman_backup_ready : true
@@ -137,16 +127,11 @@
         state: started 
         command: ["tail", "-f", "/dev/null"]
         ports: 
-        # - "5432:5432"
         - "7000:22"
         keep_volumes: true
         volumes:
-        # - /tmp/warpsql/config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
-        # - /tmp/warpsql/config/init:/docker-entrypoint-initdb.d/
         - postgres:/var/lib/postgresql/data
         - /tmp/warpsql/ssh:/tmp/ssh:ro
-        # env:
-          # POSTGRES_PASSWORD: "warpsql"
       when: hostvars.br1.barman_backup_ready|default(false)
 
 - hosts: barman
