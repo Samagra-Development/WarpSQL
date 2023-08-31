@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# copy ssh keys to root and barman users
 set -ex
 if [ -d "/tmp/ssh/" ]; then
   cp -R /tmp/ssh/ /root/.ssh/
@@ -17,8 +18,6 @@ chown barman:barman -R  ~barman/.ssh/
     && chmod 600 ~barman/.ssh/id_rsa  \
     && cat ~barman/.ssh/id_rsa.pub >> ~barman/.ssh/authorized_keys \
     && chmod 600 ~barman/.ssh/authorized_keys"
-/usr/sbin/sshd &
+/usr/sbin/sshd
 fi
-echo "hello"
-echo  "$@" 
 exec /entrypoint.sh "$@"

@@ -24,12 +24,26 @@ variable "region" {
   type        = string
 
 }
-# variable "ami_id" {
-#   description = "The AMI id of warpsql"
-#   type        = string
-# }
+
 variable "warpsql_password" {
   description = "The password for Warpsql PostgreSQL connection"
   type        = string
   default     = "warpsql"
+}
+variable "warpsql_disk_size" {
+  description = "Size of the WarpSQL instance disk"
+  type        = string
+  default     = "16"
+}
+
+variable "barman_disk_size" {
+  description = "Size of the Barman instance disk"
+  type        = string
+  default     = "16"
+}
+
+variable "ansible_disk_size" {
+  description = "Size of the Ansible instance disk"
+  type        = string
+  default     = "8"
 }

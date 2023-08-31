@@ -12,6 +12,10 @@ provider "aws" {
   region = var.region
 }
 
+locals {
+  ami_id = "ami-053b0d53c279acc90" #ubuntu 22.04 LTS
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block           = var.cidr_vpc
   enable_dns_support   = true
@@ -64,14 +68,6 @@ resource "aws_security_group" "sg_22_80" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -96,41 +92,27 @@ resource "local_sensitive_file" "pem_file" {
 }
 
 resource "aws_instance" "warpsql" {
-  ami                         = "ami-053b0d53c279acc90"
+  ami                         = local.ami_id
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.deployer.key_name
   root_block_device {
-    volume_size = "16"
+    volume_size = var.warpsql_disk_size
   }
+  user_data = <<EOF
+  #cloud-config
+    hostname: barman
+  EOF
+
   tags = {
     Name = "WarpSQL"
   }
-  connection {
-    type = "ssh"
-    user = "ubuntu"
-    # password = var.root_password
-    private_key = tls_private_key.warpsql-rsa.private_key_pem
-    host        = self.public_ip
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "echo Hi"
-    ]
-  }
-
-  provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${self.public_ip},' --become-method sudo --private-key '${local_sensitive_file.pem_file.filename}'  playbook-warpsql.yml"
-  }
-
-
-
 }
 
 resource "aws_instance" "barman" {
-  ami                         = "ami-053b0d53c279acc90"
+  ami                         = local.ami_id
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
@@ -141,34 +123,111 @@ resource "aws_instance" "barman" {
     hostname: barman
   EOF
   root_block_device {
-    volume_size = "16"
-  }
-  connection {
-    type = "ssh"
-    user = "ubuntu"
-    # password = var.root_password
-    private_key = tls_private_key.warpsql-rsa.private_key_pem
-    host        = self.public_ip
+    volume_size = var.barman_disk_size
   }
   tags = {
     Name = "Barman"
   }
+}
 
+
+resource "aws_instance" "ansible" {
+  ami                         = local.ami_id
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.subnet_public.id
+  vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.deployer.key_name
+  user_data                   = <<EOF
+  #cloud-config
+    hostname: ansible
+  EOF
+  root_block_device {
+    volume_size = var.ansible_disk_size
+  }
+  tags = {
+    Name = "ansible"
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = tls_private_key.warpsql-rsa.private_key_pem
+    host        = self.public_ip
+  }
+  # install and setup ansible
   provisioner "remote-exec" {
     inline = [
-      "echo Hi"
+      "sudo apt update",
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install python3-pip python3.10-venv ",
+      "python3 -m pip install --user pipx",
+      "python3 -m pipx ensurepath",
+      "python3 -m pipx install --include-deps ansible",
+      "mkdir -p ~/warpsql/ssh",
+      "mkdir -p /tmp/warpsql"
     ]
   }
 
-  provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${self.public_ip},' --become-method sudo --private-key '${local_sensitive_file.pem_file.filename}'  playbook-barman.yml --extra-vars 'warpsql_ip=${aws_instance.warpsql.public_ip}' "
+
+}
+
+resource "null_resource" "warpsql" {
+  depends_on = [aws_instance.ansible, aws_instance.warpsql, aws_instance.barman]
+
+  triggers = {
+    always_run = "${timestamp()}" # always run the ansible script
+  }
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = tls_private_key.warpsql-rsa.private_key_pem
+    host        = aws_instance.ansible.public_ip
+  }
+
+  # save required files on ansible host
+  provisioner "file" {
+    content     = <<EOF
+barman:
+  hosts:
+    br1:
+      ansible_host: ${aws_instance.barman.private_ip}
+
+warpsql:
+  hosts:
+    wsql1:
+      ansible_host: ${aws_instance.warpsql.private_ip}
+
+EOF
+    destination = "/tmp/warpsql/inventory.yml"
+  }
+
+  provisioner "file" {
+    source      = "config"
+    destination = "/tmp/warpsql/"
+  }
+  provisioner "file" {
+    source      = local_sensitive_file.pem_file.filename
+    destination = "/tmp/warpsql/warpsql-ansible.pem"
+  }
+
+  provisioner "file" {
+    source      = "playbook-warpsql.yml"
+    destination = "/tmp/warpsql/playbook-warpsql.yml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cp -r /tmp/warpsql/* /home/ubuntu/warpsql",
+      "cd ~/warpsql",
+      "chmod 700 ~/warpsql/warpsql-ansible.pem",
+    "ANSIBLE_HOST_KEY_CHECKING=False /home/ubuntu/.local/bin/ansible-playbook -v -u ubuntu -i inventory.yml --become-method sudo --private-key 'warpsql-ansible.pem'  playbook-warpsql.yml --extra-vars 'warpsql_password=${var.warpsql_password}'"]
   }
 }
 
 output "public_ip" {
-  value = [aws_instance.warpsql.public_ip, aws_instance.barman.public_ip]
+  value = {
+    WarpSQL = aws_instance.warpsql.public_ip
+    Barman  = aws_instance.barman.public_ip
+  Ansible = aws_instance.ansible.public_ip }
 }
 
-# output "public_ip" {
-#   value = aws_instance.warpsql.public_ip
-# }

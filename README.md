@@ -98,8 +98,8 @@ packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" wa
 |[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
 
 ## Disaster recovery 
-WarpSQL includes [`barman`](https://github.com/EnterpriseDB/barman) as the disaster recovery solution\
-supported platform : `docker`,`aws`
+WarpSQL includes [`barman`](https://github.com/EnterpriseDB/barman) as the disaster recovery solution
+supported platform : `aws`
 ### Docker
 To launch WarpSQL with Barman, run:
 ```shell
@@ -117,15 +117,23 @@ terraform destroy -target module.warpsql-containers
 ```
 
 ### AWS 
-Make sure you have `AWS` credential and `Ansible` installed and setup.
+WarpSQL provides a streamlined approach to deploying and managing PostgreSQL databases on AWS EC2 instances, complete with a disaster recovery solution powered by Barman. 
+To get started, ensure you have your AWS credentials set up and Terraform installed.
 
 To launch WarpSQL with Barman, run:
 ```shell
-cd terraform/aws
+git clone https://github.com/Samagra-Development/WarpSQL.git
+cd WarpSQL/terraform/aws
 terraform apply
 ```
 
-This launches two EC2 instances running PostgreSQL and Barman as Docker containers on Ubuntu Host OS.
+This will initiate the deployment of three EC2 instances that include an Ansible controller, PostgreSQL and Barman Docker containers.These instances are provisioned on an Ubuntu Host OS and are fully configured, requiring no further setup on your end.
+ 
+During any subsequent launches of the WarpSQL instance, the data is recovered from the latest backup stored by Barman.
+
+To specify the size of each instance's disk, provide the desired size in gigabytes to the respective variables: `warpsql_disk_size`, `ansible_disk_size`, and `barman_disk_size` in the terraform script.
+
+The Barman images are based on [ubc/barman-docker](https://github.com/ubc/barman-docker). By default, Barman performs a base backup according to the cron schedule `0 4 * * *`. If you need to modify this schedule, refer to the environment variables documentation at https://github.com/ubc/barman-docker#environment-variables.
 
 ## Contribution
 
