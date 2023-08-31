@@ -1,6 +1,7 @@
 ---
 - hosts: localhost
   become_user: ubuntu
+  any_errors_fatal: true
   tasks:
   # generate keys for the warpsql and barman instance
     - name: generate SSH key 
@@ -24,7 +25,6 @@
           - curl
           - software-properties-common
           - python3-pip
-          - virtualenv
           - python3-setuptools
         state: latest
         update_cache: true
@@ -172,13 +172,12 @@
         name: "WarpSQL" 
         image: "d3bug77/postgres:latest" 
         state: started 
-        command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+        command: ["postgres"]
         ports: 
         - "5432:5432"
         - "7000:22"
         keep_volumes: true
         volumes:
-        - /tmp/warpsql/config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
         - /tmp/warpsql/config/init:/docker-entrypoint-initdb.d/
         - postgres:/var/lib/postgresql/data
         - /tmp/warpsql/ssh:/tmp/ssh:ro

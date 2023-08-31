@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # copy ssh keys to root and postgres users
-set -ex
+set -e
 if [ -d "/tmp/ssh/" ]; then
     cp -R /tmp/ssh/ /root/.ssh/
     chmod 700 /root/.ssh
