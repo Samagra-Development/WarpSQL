@@ -12,9 +12,21 @@ Certified as Indie Hacker's best friend!!!
 - [x] [PostGIS](https://postgis.net)
 - [x] [ZomboDB](https://github.com/zombodb/zombodb)
 - [ ] [PLV8](https://github.com/plv8/plv8)
-- [ ] [Pg Repack](https://github.com/reorg/pg_repack)
+- [X] [Pg Repack](https://github.com/reorg/pg_repack)
 
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
+
+  ## Roadmap
+  - [ ]  [[C4GT] Plugins, Disaster Recovery, Benchmarking](https://github.com/Samagra-Development/WarpSQL/issues/23)
+  - [ ]  Support for WarpSQL configuration file.
+  - [ ] Failover and Disaster Recovery Testing for WarpSQL deployment. 
+  - [ ] Explore alternatives to public SSH access to enhance WarpSQL deployment security.
+  - [ ] Automatic cloud backup to an S3 bucket.
+  - [ ] Develop a Webapp for deploying and managing WarpSQL deployments.
+  - [ ] Optimize build times for GitHub Actions, especially for the ZomboDB extension.
+  - [ ] Integrate code linters into the codebase.
+  - [ ] Research commercial Database as a Service (DBaaS) offerings and report on features for potential inclusion in WarpSQL, including security enhancements.
+
 
 ### Usage with Compose
 
