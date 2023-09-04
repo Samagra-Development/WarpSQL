@@ -1,0 +1,208 @@
+---
+- hosts: localhost
+  become_user: ubuntu
+  any_errors_fatal: true
+  tasks:
+  # generate keys for the warpsql and barman instance
+    - name: generate SSH key 
+      openssh_keypair:
+        path: "~/warpsql/ssh/id_rsa"
+        type: rsa
+        size: 4096
+        state: present
+        force: no
+- hosts: warpsql,barman
+  become: true
+  tasks:
+    - name: Wait for system to become reachable 
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Install docker engine
+      apt:
+        name: 
+        - docker-ce
+        - docker-ce-cli 
+        - containerd.io 
+        - docker-buildx-plugin
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Copy ssh keys
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/ssh" 
+        dest: /tmp/warpsql/
+    - name: Copy config files
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/config" 
+        dest: /tmp/warpsql/
+
+- hosts: barman
+  become: true
+  tasks:
+    - name: Pull barman image
+      community.docker.docker_image:
+        name: "{{img_barman}}"
+        source: pull
+    
+    - name: Update the ip of warpsql in barman config
+      ansible.builtin.command:
+         cmd: sed -i "s/host=[^ ]*/host={{hostvars.wsql1.ansible_host}}/" /tmp/warpsql/config/barman/barman.d/pg.conf
+    - name: Create Barman container
+      community.docker.docker_container:
+        name: "WarpSQL-barman" 
+        image: "{{img_barman}}"
+        state: started 
+        hostname: "{{hostvars.br1.ansible_host}}" 
+        ports: 
+        - "5432:5432"
+        - "7000:22"
+        keep_volumes: true
+        volumes:
+        - /tmp/warpsql/config/barman:/etc/barman
+        - barman:/var/lib/barman
+        - /tmp/warpsql/ssh:/tmp/ssh:ro
+        env:
+          DB_SUPERUSER: barman
+          DB_SUPERUSER_PASSWORD: barman
+          DB_REPLICATION_USER: streaming_barman
+          DB_REPLICATION_PASSWORD: streaming_barman
+          DB_HOST: "{{hostvars.wsql1.ansible_host}}"
+
+    - name: check if backup is present in barmnan
+      ansible.builtin.command:
+        cmd: docker exec WarpSQL-barman sh -c "barman list-backups pg" 
+      register: barman_backups
+
+    - name: setting fact if a backup is present
+      ansible.builtin.set_fact:
+        barman_backup_ready : true
+        cacheable: yes
+      when: barman_backups.stdout != ""
+
+- hosts: warpsql
+  become: true
+  tasks:
+    - name: Pull postgres image
+      community.docker.docker_image:
+        name: "{{img_warpsql}}"
+        source: pull
+
+    - name: stop the warpsql docker
+      ansible.builtin.docker_container:
+        name: "WarpSQL"
+        state: absent 
+        keep_volumes: true
+      when: hostvars.br1.barman_backup_ready|default(false)
+
+    - name: create a tmp warpsql container for recovery 
+      community.docker.docker_container:
+        name: "WarpSQL_tmp" 
+        image: "{{img_warpsql}}"
+        state: started 
+        command: ["tail", "-f", "/dev/null"]
+        ports: 
+        - "7000:22"
+        keep_volumes: true
+        volumes:
+        - postgres:/var/lib/postgresql/data
+        - /tmp/warpsql/ssh:/tmp/ssh:ro
+      when: hostvars.br1.barman_backup_ready|default(false)
+
+- hosts: barman
+  become: true
+  tasks:
+    - name: recover the database backup 
+      ansible.builtin.command:
+        cmd: docker exec WarpSQL-barman sh -c "barman recover --remote-ssh-command 'ssh -o StrictHostKeyChecking=no postgres@{{hostvars.wsql1.ansible_host}} -p 7000' --get-wal  pg latest /var/lib/postgresql/data"
+      when: barman_backup_ready|default(false) 
+
+- hosts: warpsql
+  become: true
+  tasks:
+    - name: change the port in recovey command
+      ansible.builtin.shell: docker exec WarpSQL_tmp sh -c "sed -i \"s/restore_command = '\(.*\)'$/restore_command = '\1 --port 7000'/\" /var/lib/postgresql/data/postgresql.auto.conf"
+      when: hostvars.br1.barman_backup_ready|default(false)
+
+    - name: destroy the recovery container
+      ansible.builtin.docker_container:
+        name: "WarpSQL_tmp"
+        state: absent 
+        keep_volumes: true
+      when: hostvars.br1.barman_backup_ready|default(false)
+    
+
+- hosts: warpsql
+  become: true
+
+  tasks:
+    - name: Install psql
+      apt:
+        pkg:
+          - postgresql-client
+        state: latest
+        update_cache: true
+    - name: Create default containers
+      community.docker.docker_container:
+        name: "WarpSQL" 
+        image: "{{img_warpsql}}"
+        state: started 
+        command: ["postgres"]
+        ports: 
+        - "5432:5432"
+        - "7000:22"
+        keep_volumes: true
+        volumes:
+        - /tmp/warpsql/config/init:/docker-entrypoint-initdb.d/
+        - postgres:/var/lib/postgresql/data
+        - /tmp/warpsql/ssh:/tmp/ssh:ro
+        env:
+          POSTGRES_PASSWORD: "{{warpsql_password}}"
+
+    - name: Pause till warpsql is up 
+      ansible.builtin.shell: PGPASSWORD=warpsql psql -h localhost -U postgres -c "select 1" -zt0Aw
+      retries: 5
+      register: result
+      delay: 5
+      until: result.stdout and result.stdout.split()[0] != "1"
+
+- hosts: barman
+  become: true
+  tasks:
+    - name: start WAL shipping
+      ansible.builtin.shell:
+        cmd: docker exec WarpSQL-barman sh -c "barman switch-wal --archive  --force pg"
+      delay: 5
+      retries: 5
+      register: wal_result 
+      until: wal_result.rc == 0
+      when: not hostvars.br1.barman_backup_ready|default(false)
+    - name: Take an initial backup 
+      ansible.builtin.shell:
+        cmd: docker exec WarpSQL-barman sh -c "barman backup pg"
+      when: not hostvars.br1.barman_backup_ready|default(false)

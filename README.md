@@ -96,6 +96,35 @@ packer build -var="image_repository=your_value" -var="image_tags=[tag1,tag2]" wa
 |[PgRepack](https://github.com/reorg/pg_repack)        | `pg_repack`      |
 |[PG Auto Failover](https://github.com/hapostgres/pg_auto_failover)| `pgautofailover` |
 |[HyperLogLog](https://github.com/citusdata/postgresql-hll)     | `hll`            |
+### AWS 
+WarpSQL provides a streamlined approach to deploying and managing PostgreSQL databases on AWS EC2 instances, complete with a disaster recovery solution powered by Barman. 
+> **Warning**
+WarpSQL is a work in progress, and the current setup allows public SSH access to instances, which might not be secure.
+
+
+To get started, ensure you have your AWS credentials set up and Docker,Terraform installed.
+
+First, create Docker images using the provided Dockerfiles in the `barman` and `warpsql_ssh` directories. Once built, push these images to a public image repository.
+Specify the repository where you pushed these Docker images by passing the repository URL as a variable in the Terraform command.
+
+To launch WarpSQL with Barman, run:
+```shell
+git clone https://github.com/Samagra-Development/WarpSQL.git
+cd WarpSQL/terraform/aws
+terraform apply -var img_warpsql=<your_warpsql_image_repository> -var img_barman=<your_barman_image_repository>
+```
+
+You can also set the password for the Postgres instance by using the `warpsql_password` variable in the Terraform script the default value is `warpsql`.
+
+This will initiate the deployment of three EC2 instances that include an Ansible controller, PostgreSQL and Barman Docker containers.These instances are provisioned on an Ubuntu Host OS and are fully configured, requiring no further setup on your end.
+ 
+During any subsequent launches of the WarpSQL instance, the data is recovered from the latest backup stored by Barman.
+
+To specify the size of each instance's disk, provide the desired size in gigabytes to the respective variables: `warpsql_disk_size`, `ansible_disk_size`, and `barman_disk_size` in the terraform script.
+
+
+The Barman images are based on [ubc/barman-docker](https://github.com/ubc/barman-docker). By default, Barman performs a base backup according to the cron schedule `0 4 * * *`. If you need to modify this schedule, refer to the environment variables documentation at https://github.com/ubc/barman-docker#environment-variables.
+
 ## Contribution
 
 You can contribute to the development of WarpSQL using both Gitpod and Codespaces. Follow the steps below to set up your development environment and make contributions:
