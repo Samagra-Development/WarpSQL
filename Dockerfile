@@ -229,34 +229,35 @@ RUN set -eux \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
 
-ENV RUSTFLAGS="-C target-feature=-crt-static"
-ARG PG_VER
-RUN apk add --no-cache --virtual .zombodb-build-deps \
-    git \
-	curl \
-	bash \
-	ruby-dev \
-	ruby-etc \
-	musl-dev \
-	make \
-	gcc \
-	coreutils \
-	util-linux-dev \
-	musl-dev \
-	openssl-dev \
-    clang15 \
-	tar \
-    && gem install --no-document fpm \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
-    && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx --version 0.9.3 \
-    && cargo pgrx init --${PG_VER}=$(which pg_config) \
-    && git clone https://github.com/zombodb/zombodb.git \
-    && cd ./zombodb \
-    && cargo pgrx install --release \
-    && cd .. \
-    && rm -rf ./zombodb \
-    && apk del .zombodb-build-deps
+# ENV RUSTFLAGS="-C target-feature=-crt-static"
+# ARG PG_VER
+# RUN apk add --no-cache --virtual .zombodb-build-deps \
+#     git \
+# 	curl \
+# 	bash \
+# 	ruby-dev \
+# 	ruby-etc \
+# 	musl-dev \
+# 	make \
+# 	gcc \
+# 	coreutils \
+# 	util-linux-dev \
+# 	musl-dev \
+# 	openssl-dev \
+#     clang15 \
+# 	tar \
+#     && gem install --no-document fpm \
+#     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+#     && PATH=$HOME/.cargo/bin:$PATH \
+#     && cargo install cargo-pgrx --version 0.9.3 \
+#     && cargo pgrx init --${PG_VER}=$(which pg_config) 
+
+# RUN PATH=$HOME/.cargo/bin:$PATH && git clone https://github.com/zombodb/zombodb.git \
+#     && cd ./zombodb \
+#     && cargo pgrx install --release \
+#     && cd .. \
+#     && rm -rf ./zombodb \
+#     && apk del .zombodb-build-deps
 
 ## Adding pg_repack
 ARG PG_REPACK_VERSION
@@ -341,3 +342,74 @@ RUN set -eux \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
     && apk del .postgresql-hll-build-deps 
 
+# Install pg_jobmon
+ENV PG_JOBMON_VERSION v1.4.1
+RUN set -ex \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && cd /tmp\
+    && wget -O pg_jobmon.tar.gz "https://github.com/omniti-labs/pg_jobmon/archive/$PG_JOBMON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_jobmon \
+    && tar \
+        --extract \
+        --file pg_jobmon.tar.gz \
+        --directory /tmp/pg_jobmon \
+        --strip-components 1 \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-build-deps \
+        autoconf \
+        automake \
+        g++ \
+        clang15 \
+        llvm15 \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    && cd /tmp/pg_jobmon \
+    && ls -alh . \
+    && make \
+    && make install \
+    && cd / \
+    && apk del .pg_jobmon-deps .pg_jobmon-build-deps \
+    && rm -rf /tmp/pg_jobmon \
+    && rm /tmp/pg_jobmon.tar.gz 
+
+# Adding pg_partman 
+ENV PG_PARTMAN_VERSION v4.7.1 
+
+RUN set -ex \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_partman-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_partman-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_partman.tar.gz "https://github.com/pgpartman/pg_partman/archive/$PG_PARTMAN_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_partman \
+    && tar \
+        --extract \
+        --file pg_partman.tar.gz \
+        --directory /tmp/pg_partman \
+        --strip-components 1 \
+    && cd /tmp/pg_partman \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_partman.tar.gz \
+    && rm -rf /tmp/pg_partman \
+    && apk del .pg_partman-deps .pg_partman-build-deps 
