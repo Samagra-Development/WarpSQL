@@ -229,34 +229,34 @@ RUN set -eux \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
 
-ENV RUSTFLAGS="-C target-feature=-crt-static"
-ARG PG_VER
-RUN apk add --no-cache --virtual .zombodb-build-deps \
-    git \
-	curl \
-	bash \
-	ruby-dev \
-	ruby-etc \
-	musl-dev \
-	make \
-	gcc \
-	coreutils \
-	util-linux-dev \
-	musl-dev \
-	openssl-dev \
-    clang15 \
-	tar \
-    && gem install --no-document fpm \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
-    && PATH=$HOME/.cargo/bin:$PATH \
-    && cargo install cargo-pgrx --version 0.9.3 \
-    && cargo pgrx init --${PG_VER}=$(which pg_config) \
-    && git clone https://github.com/zombodb/zombodb.git \
-    && cd ./zombodb \
-    && cargo pgrx install --release \
-    && cd .. \
-    && rm -rf ./zombodb \
-    && apk del .zombodb-build-deps
+# ENV RUSTFLAGS="-C target-feature=-crt-static"
+# ARG PG_VER
+# RUN apk add --no-cache --virtual .zombodb-build-deps \
+#     git \
+# 	curl \
+# 	bash \
+# 	ruby-dev \
+# 	ruby-etc \
+# 	musl-dev \
+# 	make \
+# 	gcc \
+# 	coreutils \
+# 	util-linux-dev \
+# 	musl-dev \
+# 	openssl-dev \
+#     clang15 \
+# 	tar \
+#     && gem install --no-document fpm \
+#     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+#     && PATH=$HOME/.cargo/bin:$PATH \
+#     && cargo install cargo-pgrx --version 0.9.3 \
+#     && cargo pgrx init --${PG_VER}=$(which pg_config) \
+#     && git clone https://github.com/zombodb/zombodb.git \
+#     && cd ./zombodb \
+#     && cargo pgrx install --release \
+#     && cd .. \
+#     && rm -rf ./zombodb \
+#     && apk del .zombodb-build-deps
 
 ## Adding pg_repack
 ARG PG_REPACK_VERSION
@@ -341,3 +341,39 @@ RUN set -eux \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
     && apk del .postgresql-hll-build-deps 
 
+# Adding pg_cron 
+ENV PG_CRON_VERSION v1.6.0
+
+RUN set -ex \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_cron-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_cron-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_cron.tar.gz "https://github.com/citusdata/pg_cron/archive/refs/tags/$PG_CRON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_cron \
+    && tar \
+        --extract \
+        --file pg_cron.tar.gz \
+        --directory /tmp/pg_cron \
+        --strip-components 1 \
+    && cd /tmp/pg_cron \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_cron.tar.gz \
+    && rm -rf /tmp/pg_cron \
+    && apk del .pg_cron-deps .pg_cron-build-deps 
+RUN echo "cron.database_name = 'postgres'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
