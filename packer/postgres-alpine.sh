@@ -370,7 +370,7 @@ set -e \
     g++ \
     clang15 \
     llvm15 \
-    libtool \   
+    libtool \
     libxml2-dev \
     make \
     perl \
