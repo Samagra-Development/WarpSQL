@@ -178,7 +178,7 @@ check_env_variables PG_VER
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 
     apt update 
     apt-get update -y --fix-missing 
-    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev pkg-config libreadline-dev libgdbm-dev libssl1.0-dev
+    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev pkg-config libreadline-dev libgdbm-dev libssl1.0-dev libyaml-dev
     wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz 
     tar -xzvf openssl-1.0.2l.tar.gz 
     cd openssl-1.0.2l 
