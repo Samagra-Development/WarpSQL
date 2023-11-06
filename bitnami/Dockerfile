@@ -287,7 +287,7 @@ RUN apt-get update \
         /tmp/*               \
         /var/tmp/* 
 
-# # Install zombodb extension
+# Install zombodb extension
 ARG PG_MAJOR
 RUN apt-get update -y -qq --fix-missing \
     && apt-get install -y wget gnupg \
