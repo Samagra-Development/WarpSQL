@@ -317,6 +317,79 @@ check_env_variables POSTGRES_HLL_VERSION
 
 }
 
+install_pg_jobmon(){
+check_env_variables PG_JOBMON_VERSION
+set -e \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && cd /tmp\
+    && wget -O pg_jobmon.tar.gz "https://github.com/omniti-labs/pg_jobmon/archive/$PG_JOBMON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_jobmon \
+    && tar \
+        --extract \
+        --file pg_jobmon.tar.gz \
+        --directory /tmp/pg_jobmon \
+        --strip-components 1 \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-build-deps \
+        autoconf \
+        automake \
+        g++ \
+        clang15 \
+        llvm15 \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    && cd /tmp/pg_jobmon \
+    && ls -alh . \
+    && make \
+    && make install \
+    && cd / \
+    && apk del .pg_jobmon-deps .pg_jobmon-build-deps \
+    && rm -rf /tmp/pg_jobmon \
+    && rm /tmp/pg_jobmon.tar.gz 
+
+}
+
+install_pg_partman(){
+check_env_variables PG_PARTMAN_VERSION
+set -e \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_partman-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_partman-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_partman.tar.gz "https://github.com/pgpartman/pg_partman/archive/$PG_PARTMAN_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_partman \
+    && tar \
+        --extract \
+        --file pg_partman.tar.gz \
+        --directory /tmp/pg_partman \
+        --strip-components 1 \
+    && cd /tmp/pg_partman \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_partman.tar.gz \
+    && rm -rf /tmp/pg_partman \
+    && apk del .pg_partman-deps .pg_partman-build-deps 
+}
 
 # enable contrib extentions
 sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'pg_stat_statements,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
@@ -351,6 +424,12 @@ for extension in "${EXTENSION_LIST[@]}"; do
             ;;
         hll)
             install_hll
+            ;;
+        pg_jobmon)
+            install_pg_jobmon
+            ;;
+        pg_partman)
+            install_pg_partman
             ;;
         *)
             # Handle unrecognized extensions

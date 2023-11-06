@@ -343,8 +343,8 @@ RUN set -eux \
     && apk del .postgresql-hll-build-deps 
 
 # Install pg_jobmon
-ENV PG_JOBMON_VERSION v1.4.1
-RUN set -ex \
+ARG PG_JOBMON_VERSION
+RUN set -e \
     \
     && apk add --no-cache --virtual .pg_jobmon-deps \
         ca-certificates \
@@ -380,9 +380,9 @@ RUN set -ex \
     && rm /tmp/pg_jobmon.tar.gz 
 
 # Adding pg_partman 
-ENV PG_PARTMAN_VERSION v4.7.1 
+ARG PG_PARTMAN_VERSION
 
-RUN set -ex \
+RUN set -e \
     && cd /tmp\
     && apk add --no-cache --virtual .pg_partman-deps \
     ca-certificates \

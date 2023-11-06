@@ -318,7 +318,94 @@ check_env_variables POSTGRES_HLL_VERSION
 
 }
 
+install_pg_jobmon(){
+check_env_variables PG_JOBMON_VERSION
+set -ex \
+    &&apt-get update \
+    && apt-get install -y  \
+        ca-certificates \
+        openssl \
+        tar \
+        wget \
+        autoconf \
+        automake \
+        g++ \
+        clang \
+        llvm \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    \
+    && cd /tmp\
+    && wget -O pg_jobmon.tar.gz "https://github.com/omniti-labs/pg_jobmon/archive/$PG_JOBMON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_jobmon \
+    && tar \
+        --extract \
+        --file pg_jobmon.tar.gz \
+        --directory /tmp/pg_jobmon \
+        --strip-components 1 \
+    \
+    && cd /tmp/pg_jobmon \
+    && make \
+    && make install \
+    && cd / \
+    && apt-get autoremove --purge -y \
+        wget \
+        autoconf \
+        automake \
+        clang \
+        llvm \
+        make \
+        perl \
+    && apt-get clean -y \
+    && rm -rf /tmp/pg_jobmon \
+    && rm /tmp/pg_jobmon.tar.gz 
+}
 
+install_pg_partman(){
+check_env_variables PG_PARTMAN_VERSION
+set -ex \
+    && cd /tmp\
+    && apt-get update \
+    && apt-get install -y  \
+    ca-certificates \
+    openssl \
+    tar \
+    autoconf \
+    automake \
+    g++ \
+    wget \
+    clang \
+    llvm \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_partman.tar.gz "https://github.com/pgpartman/pg_partman/archive/$PG_PARTMAN_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_partman \
+    && tar \
+        --extract \
+        --file pg_partman.tar.gz \
+        --directory /tmp/pg_partman \
+        --strip-components 1 \
+    && cd /tmp/pg_partman \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && apt-get autoremove --purge -y \
+        wget \
+        autoconf \
+        automake \
+        clang \
+        llvm \
+        make \
+        perl \
+    && apt-get clean -y \
+    && rm /tmp/pg_partman.tar.gz \
+    && rm -rf /tmp/pg_partman 
+}
 # enable contrib extentions
 # sed -r -i  's/[#]*\s*(POSTGRESQL_SHARED_PRELOAD_LIBRARIES)\s*=\s*"(.*)"/\1="pg_stat_statements,\2"/;s/,"/"/' /opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh
 
@@ -352,6 +439,12 @@ for extension in "${EXTENSION_LIST[@]}"; do
             ;;
         hll)
             install_hll
+            ;;
+        pg_jobmon)
+            install_pg_jobmon
+            ;;
+        pg_partman)
+            install_pg_partman
             ;;
         *)
             # Handle unrecognized extensions
