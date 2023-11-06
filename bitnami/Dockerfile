@@ -306,9 +306,9 @@ RUN apt-get update -y -qq --fix-missing \
     && ln -sf /usr/local/ssl/bin/openssl `which openssl` \
     && mkdir ruby  \
 	&& cd ruby \
-	&& wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz \
-	&& tar xvfz ruby-2.3.0.tar.gz \
-	&& cd ruby-2.3.0 \
+	&& wget https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.2.tar.gz \
+	&& tar xvfz ruby-3.2.2.tar.gz \
+	&& cd ruby-3.2.2 \
 	&& ./configure  --with-openssl-dir=/usr/include/openssl-1.0 \
 	&& make -j64 \
 	&& make install \

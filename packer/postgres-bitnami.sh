@@ -392,7 +392,6 @@ set -ex \
     && cd /tmp/pg_partman \
     && make \
     && make install \
-    # clean
     && cd / \
     && apt-get autoremove --purge -y \
         wget \

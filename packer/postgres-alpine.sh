@@ -384,7 +384,6 @@ set -e \
     && cd /tmp/pg_partman \
     && make \
     && make install \
-    # clean
     && cd / \
     && rm /tmp/pg_partman.tar.gz \
     && rm -rf /tmp/pg_partman \
