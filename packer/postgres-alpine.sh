@@ -330,7 +330,7 @@ check_env_variables PG_CRON_VERSION
     g++ \
     clang15 \
     llvm15 \
-    libtool \   
+    libtool \
     libxml2-dev \
     make \
     perl \
