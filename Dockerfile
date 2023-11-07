@@ -229,34 +229,34 @@ RUN set -eux \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
 
-# ENV RUSTFLAGS="-C target-feature=-crt-static"
-# ARG PG_VER
-# RUN apk add --no-cache --virtual .zombodb-build-deps \
-#     git \
-# 	curl \
-# 	bash \
-# 	ruby-dev \
-# 	ruby-etc \
-# 	musl-dev \
-# 	make \
-# 	gcc \
-# 	coreutils \
-# 	util-linux-dev \
-# 	musl-dev \
-# 	openssl-dev \
-#     clang15 \
-# 	tar \
-#     && gem install --no-document fpm \
-#     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
-#     && PATH=$HOME/.cargo/bin:$PATH \
-#     && cargo install cargo-pgrx --version 0.9.3 \
-#     && cargo pgrx init --${PG_VER}=$(which pg_config) \
-#     && git clone https://github.com/zombodb/zombodb.git \
-#     && cd ./zombodb \
-#     && cargo pgrx install --release \
-#     && cd .. \
-#     && rm -rf ./zombodb \
-#     && apk del .zombodb-build-deps
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+ARG PG_VER
+RUN apk add --no-cache --virtual .zombodb-build-deps \
+    git \
+	curl \
+	bash \
+	ruby-dev \
+	ruby-etc \
+	musl-dev \
+	make \
+	gcc \
+	coreutils \
+	util-linux-dev \
+	musl-dev \
+	openssl-dev \
+    clang15 \
+	tar \
+    && gem install --no-document fpm \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+    && PATH=$HOME/.cargo/bin:$PATH \
+    && cargo install cargo-pgrx --version 0.9.3 \
+    && cargo pgrx init --${PG_VER}=$(which pg_config) \
+    && git clone https://github.com/zombodb/zombodb.git \
+    && cd ./zombodb \
+    && cargo pgrx install --release \
+    && cd .. \
+    && rm -rf ./zombodb \
+    && apk del .zombodb-build-deps
 
 ## Adding pg_repack
 ARG PG_REPACK_VERSION
