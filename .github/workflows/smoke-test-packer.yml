@@ -80,7 +80,7 @@ jobs:
       matrix:
         pg: [15]
         type: ['alpine', 'bitnami']
-        extention: ['timescaledb','pgvector','postgis','zombodb','pg_repack','pgautofailover','hll','citus']
+        extention: ['timescaledb','pgvector','postgis','zombodb','pg_repack','pgautofailover','hll','citus','pg_cron']
     steps:
       - name: Check out the source
         uses: actions/checkout@v3

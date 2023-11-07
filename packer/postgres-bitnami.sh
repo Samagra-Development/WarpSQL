@@ -317,7 +317,55 @@ check_env_variables POSTGRES_HLL_VERSION
         /var/tmp/* 
 
 }
+install_pg_cron(){
+check_env_variables PG_CRON_VERSION
+set -ex \
+    && cd /tmp\
+    && apt-get update \
+    && apt-get install -y  \
+    ca-certificates \
+    openssl \
+    tar \
+    autoconf \
+    automake \
+    g++ \
+    clang \
+    llvm \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    wget \
+    && wget -O pg_cron.tar.gz "https://github.com/citusdata/pg_cron/archive/refs/tags/$PG_CRON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_cron \
+    && tar \
+        --extract \
+        --file pg_cron.tar.gz \
+        --directory /tmp/pg_cron \
+        --strip-components 1 \
+    && cd /tmp/pg_cron \
+    && make \
+    && make install \
+    && sed -r -i  's/[#]*\s*(POSTGRESQL_SHARED_PRELOAD_LIBRARIES)\s*=\s*"(.*)"/\1="pg_cron,\2"/;s/,"/"/' /opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh \
+    && cd / \
+    && rm /tmp/pg_cron.tar.gz \
+    && rm -rf /tmp/pg_cron \
+    && apt-get autoremove --purge -y \
+            autoconf \
+            automake \
+            g++ \
+            clang \
+            llvm \
+            make \
+            perl \
+            wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
 
+}
 
 # enable contrib extentions
 # sed -r -i  's/[#]*\s*(POSTGRESQL_SHARED_PRELOAD_LIBRARIES)\s*=\s*"(.*)"/\1="pg_stat_statements,\2"/;s/,"/"/' /opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh
@@ -352,6 +400,9 @@ for extension in "${EXTENSION_LIST[@]}"; do
             ;;
         hll)
             install_hll
+            ;;
+        pg_cron)
+            install_pg_cron
             ;;
         *)
             # Handle unrecognized extensions

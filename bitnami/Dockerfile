@@ -326,6 +326,55 @@ RUN apt-get update -y -qq --fix-missing \
     && apt-get autoremove --purge -y git curl clang-14  gcc make build-essential   wget  \
     && rm -rf .cargo .gem  openssl-1.0.2l .rustup openssl-1.0.2l.tar.gz
 
+# Adding pg_cron 
+ARG PG_CRON_VERSION
+
+RUN set -e \
+    && cd /tmp\
+    && apt-get update \
+    && apt-get install -y  \
+    ca-certificates \
+    openssl \
+    tar \
+    autoconf \
+    automake \
+    g++ \
+    clang \
+    llvm \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    wget \
+    && wget -O pg_cron.tar.gz "https://github.com/citusdata/pg_cron/archive/refs/tags/$PG_CRON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_cron \
+    && tar \
+        --extract \
+        --file pg_cron.tar.gz \
+        --directory /tmp/pg_cron \
+        --strip-components 1 \
+    && cd /tmp/pg_cron \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_cron.tar.gz \
+    && rm -rf /tmp/pg_cron \
+    && apt-get autoremove --purge -y \
+            autoconf \
+            automake \
+            g++ \
+            clang \
+            llvm \
+            make \
+            perl \
+            wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]

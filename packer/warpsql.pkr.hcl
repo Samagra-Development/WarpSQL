@@ -20,7 +20,7 @@ variable "image_tags" {
 }
 variable "extentions" {
     type = string
-    default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus"
+    default = "timescaledb,pgvector,postgis,zombodb,pg_repack,pgautofailover,hll,citus,pg_cron"
 }
 source "docker" "alpine" {
   image  = "postgres:15-alpine"
@@ -64,6 +64,7 @@ build {
       "PG_AUTO_FAILOVER_VERSION=2.0",
       "POSTGRES_HLL_VERSION=2.17",
       "POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b",
+      "PG_CRON_VERSION=v1.6.0",
       "TS_VERSION=main"
     ]
     script = "postgres-alpine.sh"
@@ -90,6 +91,7 @@ build {
       "PG_AUTO_FAILOVER_VERSION=2.0",
       "POSTGRES_HLL_VERSION=2.17",
       "POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b",
+      "PG_CRON_VERSION=v1.6.0",
       "TS_VERSION=main"
     ]
     script = "postgres-bitnami.sh"

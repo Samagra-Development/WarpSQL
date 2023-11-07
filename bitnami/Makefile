@@ -12,6 +12,7 @@ PG_REPACK_VERSION = 1.4.8
 PG_AUTO_FAILOVER_VERSION = 2.0
 POSTGRES_HLL_VERSION = 2.17
 PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
+PG_CRON_VERSION=v1.6.0
 
 TS_VERSION=main
 PREV_TS_VERSION=$(shell wget --quiet -O - https://raw.githubusercontent.com/timescale/timescaledb/${TS_VERSION}/version.config | grep update_from_version | sed -e 's!update_from_version = !!')
@@ -34,7 +35,9 @@ DOCKER_BUILD_ARGS = --build-arg PG_VERSION=$(PG_VER_NUMBER) \
 		    --build-arg PG_MAJOR=$(PG_MAJOR) \
 		    --build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
 	        --build-arg POSTGIS_SHA256=$(POSTGIS_SHA256)  \
-		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)
+		    --build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION) \
+		    --build-arg PG_CRON_VERSION=$(PG_CRON_VERSION)
+
 
 default: image
 

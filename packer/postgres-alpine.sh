@@ -316,7 +316,40 @@ check_env_variables POSTGRES_HLL_VERSION
     apk del .postgresql-hll-build-deps 
 
 }
-
+install_pg_cron(){
+check_env_variables PG_CRON_VERSION
+    set -e \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_cron-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_cron-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_cron.tar.gz "https://github.com/citusdata/pg_cron/archive/refs/tags/$PG_CRON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_cron \
+    && tar \
+        --extract \
+        --file pg_cron.tar.gz \
+        --directory /tmp/pg_cron \
+        --strip-components 1 \
+    && cd /tmp/pg_cron \
+    && make \
+    && make install \
+    && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'pg_cron,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample \
+    && cd / \
+    && rm /tmp/pg_cron.tar.gz \
+    && rm -rf /tmp/pg_cron \
+    && apk del .pg_cron-deps .pg_cron-build-deps 
+}
 
 # enable contrib extentions
 sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'pg_stat_statements,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
@@ -351,6 +384,9 @@ for extension in "${EXTENSION_LIST[@]}"; do
             ;;
         hll)
             install_hll
+            ;;
+        pg_cron)
+            install_pg_cron
             ;;
         *)
             # Handle unrecognized extensions

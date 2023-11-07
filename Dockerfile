@@ -74,7 +74,7 @@ RUN set -ex \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
 
 # Adding PG Vector
 
@@ -342,9 +342,9 @@ RUN set -eux \
     && apk del .postgresql-hll-build-deps 
 
 # Adding pg_cron 
-ENV PG_CRON_VERSION v1.6.0
+ARG PG_CRON_VERSION
 
-RUN set -ex \
+RUN set -e \
     && cd /tmp\
     && apk add --no-cache --virtual .pg_cron-deps \
     ca-certificates \
@@ -375,5 +375,3 @@ RUN set -ex \
     && rm /tmp/pg_cron.tar.gz \
     && rm -rf /tmp/pg_cron \
     && apk del .pg_cron-deps .pg_cron-build-deps 
-RUN echo "cron.database_name = 'postgres'" >> /usr/local/share/postgresql/postgresql.conf.sample
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_stat_statements,pgautofailover,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
