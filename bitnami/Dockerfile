@@ -155,12 +155,13 @@ RUN set -eux \
         libxml2-dev \
         libgeos-dev \
         libproj-dev \
+        libpcre3-dev \
         libprotobuf-c-dev \
         protobuf-c-compiler \
         g++\
         gcc \
         make \
-    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/refs/tags/${POSTGIS_VERSION}.tar.gz" \
     && echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - \
     && mkdir -p /usr/src/postgis \
     && tar \
@@ -173,10 +174,9 @@ RUN set -eux \
 # build PostGIS
     \
     && cd /usr/src/postgis \
-    && gettextize \
     && ./autogen.sh \
     && ./configure \
-        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"\
+        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config" --with-gdalconfig="/opt/bitnami/postgresql/bin/gdal-config"\
     && make -j$(nproc) \
     && make install \
     && cd / \
