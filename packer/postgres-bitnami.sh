@@ -130,12 +130,13 @@ check_env_variables POSTGIS_VERSION POSTGIS_SHA256
         libxml2-dev \
         libgeos-dev \
         libproj-dev \
+        libpcre3-dev \
         libprotobuf-c-dev \
         protobuf-c-compiler \
         g++\
         gcc \
         make 
-    wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" 
+    wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/refs/tags/${POSTGIS_VERSION}.tar.gz" 
     echo "${POSTGIS_SHA256} *postgis.tar.gz" | sha256sum -c - 
     mkdir -p /usr/src/postgis 
     tar \
@@ -145,11 +146,11 @@ check_env_variables POSTGIS_VERSION POSTGIS_SHA256
         --strip-components 1 
     rm postgis.tar.gz 
 # build PostGIS
-    cd /usr/src/postgis 
-    gettextize 
+    cd /usr/src/postgis  
     ./autogen.sh 
     ./configure \
-        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"
+        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config" \
+        --with-gdalconfig="/opt/bitnami/postgresql/bin/gdal-config"
     make -j$(nproc) 
     make install 
     cd / 
@@ -178,7 +179,7 @@ check_env_variables PG_VER
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 
     apt update 
     apt-get update -y --fix-missing 
-    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev pkg-config libreadline-dev libgdbm-dev libssl1.0-dev
+    apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev pkg-config libreadline-dev libgdbm-dev libssl1.0-dev libyaml-dev
     wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz 
     tar -xzvf openssl-1.0.2l.tar.gz 
     cd openssl-1.0.2l 
@@ -190,9 +191,9 @@ check_env_variables PG_VER
     ln -sf /usr/local/ssl/bin/openssl `which openssl` 
     mkdir ruby  
 	cd ruby 
-	wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz 
-	tar xvfz ruby-2.3.0.tar.gz 
-	cd ruby-2.3.0 
+	wget https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.2.tar.gz
+	tar xvfz ruby-3.2.2.tar.gz
+	cd ruby-3.2.2 
 	./configure  --with-openssl-dir=/usr/include/openssl-1.0 
 	make -j64 
 	make install 

@@ -59,11 +59,11 @@ build {
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
-      "POSTGIS_VERSION=3.3.2",
+      "POSTGIS_VERSION=3.4.1",
       "PG_REPACK_VERSION=1.4.8",
       "PG_AUTO_FAILOVER_VERSION=2.0",
       "POSTGRES_HLL_VERSION=2.17",
-      "POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b",
+      "POSTGIS_SHA256=473c09cbeb68c6e39c882c35e716994d2f8c1e614611162ef3d2a54716cbb74c",
       "TS_VERSION=main"
     ]
     script = "postgres-alpine.sh"
@@ -84,12 +84,12 @@ build {
       "PG_VERSION=15",
       "PG_VER=pg15",
       "CITUS_VERSION=11.2.0",
-      "POSTGIS_VERSION=3.3.2",
+      "POSTGIS_VERSION=3.4.1",
       "PG_REPACK_VERSION=1.4.8",
       "PG_MAJOR=15",
       "PG_AUTO_FAILOVER_VERSION=2.0",
       "POSTGRES_HLL_VERSION=2.17",
-      "POSTGIS_SHA256=2a6858d1df06de1c5f85a5b780773e92f6ba3a5dc09ac31120ac895242f5a77b",
+      "POSTGIS_SHA256=473c09cbeb68c6e39c882c35e716994d2f8c1e614611162ef3d2a54716cbb74c",
       "TS_VERSION=main"
     ]
     script = "postgres-bitnami.sh"
