@@ -73,6 +73,9 @@ RUN set -ex \
     && rm -rf /build \
     && sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /usr/local/share/postgresql/postgresql.conf.sample
 
+
+# Update to shared_preload_libraries
+RUN echo "shared_preload_libraries = 'timescaledb,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
 # Adding PG Vector
 
 RUN cd /tmp
@@ -94,3 +97,38 @@ RUN apk add --no-cache --virtual .build-deps \
                 && ls \
                 && make \
                 && make install
+
+# Adding pg_cron 
+ARG PG_CRON_VERSION
+
+RUN set -ex \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_cron-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_cron-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_cron.tar.gz "https://github.com/citusdata/pg_cron/archive/refs/tags/${PG_CRON_VERSION}.tar.gz" \
+    && mkdir -p /tmp/pg_cron \
+    && tar \
+        --extract \
+        --file pg_cron.tar.gz \
+        --directory /tmp/pg_cron \
+        --strip-components 1 \
+    && cd /tmp/pg_cron \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_cron.tar.gz \
+    && rm -rf /tmp/pg_cron \
+    && apk del .pg_cron-deps .pg_cron-build-deps 
