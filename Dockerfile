@@ -85,6 +85,7 @@ RUN apk add --no-cache --virtual .build-deps \
                 libc-dev \
                 llvm15 \
                 clang \
+                clang15 \
                 make \
                 cmake \
                 util-linux-dev \
