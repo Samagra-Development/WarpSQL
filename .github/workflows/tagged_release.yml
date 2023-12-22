@@ -1,0 +1,77 @@
+name: Tagged Release Docker Image
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+      
+env:
+  ORG: samagragovernance
+  TS_VERSION: main
+  BETA: 1 # prevents the latest tag from being pushed.
+jobs:
+
+  # Build multi-arch TimescaleDB images for both TSL and OSS code.
+  postgres:
+
+    name: PG${{ matrix.pg }}${{ matrix.oss }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [13, 14, 15]
+        oss: [ "", "-oss" ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+            ref: ${{inputs.version}}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
+
+      - name: Build and push multi-platform Docker image for postgres
+        run: |
+            make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
+            TS_VERSION=$TS_VERSION TAG=$TAG PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
+        env:
+            TAG: -t samagragovernance/postgres:${{inputs.version}}-pg${{ matrix.pg }}
+  # Build bitnami images of TimscaleDB.
+  # The images are built only for amd64, since it is the only supported architecture in the base image bitname/postgresql.
+  # The images are only built for TSL code.
+  timescaledb-bitnami:
+
+    name: PG${{ matrix.pg }}-bitnami
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [13, 14, 15]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+            ref: ${{inputs.version}}
+
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
+
+      - name: Build and push amd64 Docker image for TimescaleDB bitnami
+        run: |
+          export BETA=1
+          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} TS_VERSION=$TS_VERSION BETA=$BETA TAG=$TAG
+        working-directory: bitnami
+        env:
+            TAG: -t timescaledev/timescaledb:${{inputs.version}}-pg${{ matrix.pg }}-bitnami
