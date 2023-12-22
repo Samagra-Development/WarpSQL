@@ -1,22 +1,23 @@
-name: Release Docker Image
+name: Tagged Release Docker Image
 on:
-  push:
-    branches: [ release_docker, dev-build ]
   workflow_dispatch:
     inputs:
       version:
         description: 'Version to release'
         required: true
-      # This is a manual workaround until the latest tagging is fixed:
-      # https://github.com/timescale/timescaledb-docker/issues/205
-      no_tag_latest:
-        description: 'Do not tag the published images as latest'
-        type: boolean
-        required: false
-        default: false
+      ORG:
+          description: 'the organization for tagging Docker images'
+          required: true
+          default: "samagragovernance"
+      tag_latest:
+            description: 'Tag the published images as latest'
+            type: boolean
+            required: false
+            default: false
 env:
-  ORG: samagragovernance
+  ORG: ${{inputs.ORG}}
   TS_VERSION: main
+  BETA: 1 # prevents the latest tag from being pushed.
 jobs:
 
   # Build multi-arch TimescaleDB images for both TSL and OSS code.
@@ -31,6 +32,8 @@ jobs:
         oss: [ "", "-oss" ]
     steps:
       - uses: actions/checkout@v3
+        with:
+            ref: ${{inputs.version}}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -49,13 +52,13 @@ jobs:
 
       - name: Build and push multi-platform Docker image for postgres
         run: |
-          if [ "${{ github.event.inputs.no_tag_latest }}" == "true" ]
-          then
-              export BETA=1
-          fi
-          make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
-              TS_VERSION=$TS_VERSION PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
-
+            if [${{inputs.tag_latest}} == 'true']; then
+              export BETA=''
+            fi
+            make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
+            TS_VERSION=$TS_VERSION TAG_VERSION="$TAG_VERSION" PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
+        env:
+            TAG_VERSION: "${{inputs.ORG}}/postgres:${{inputs.version}}-pg${{ matrix.pg }}"
   # Build bitnami images of TimscaleDB.
   # The images are built only for amd64, since it is the only supported architecture in the base image bitname/postgresql.
   # The images are only built for TSL code.
@@ -70,12 +73,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+            ref: ${{inputs.version}}
 
       - name: Login to DockerHub Registry
         run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
 
       - name: Build and push amd64 Docker image for TimescaleDB bitnami
         run: |
-          export BETA=1
-          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} TS_VERSION=$TS_VERSION BETA=$BETA
+          if [${{inputs.tag_latest}} == 'true']; then
+            export BETA=''
+          fi
+          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} TS_VERSION=$TS_VERSION BETA=$BETA TAG_VERSION="$TAG_VERSION"
         working-directory: bitnami
+        env:
+          TAG_VERSION: "${{inputs.ORG}}/timescaledb:${{inputs.version}}-pg${{ matrix.pg }}-bitnami"
