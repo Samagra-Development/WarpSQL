@@ -14,9 +14,13 @@ on:
             type: boolean
             required: false
             default: false
+      ts_version:
+        description: 'TS version to be used'
+        required: false
+        default: main
 env:
   ORG: ${{inputs.ORG}}
-  TS_VERSION: main
+  TS_VERSION: ${{inputs.ts_version}}
   BETA: 1 # prevents the latest tag from being pushed.
 jobs:
 
