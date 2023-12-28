@@ -8,4 +8,7 @@
 - [x] [PgCron ](https://github.com/citusdata/pg_cron)
 - [ ] [Citus](https://www.citusdata.com/)
 
+## Releases
+- [Versioning Policy](./docs/version-policy.md)
+
 Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
