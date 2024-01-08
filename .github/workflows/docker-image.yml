@@ -17,11 +17,11 @@ on:
       ts_version:
         description: 'TS version to be used'
         required: false
-        default: main
+        default: ""
 env:
   ORG: ${{inputs.ORG}}
   TS_VERSION: ${{inputs.ts_version}}
-  BETA: 1 # prevents the latest tag from being pushed.
+  PRE_RELEASE: "true" # prevents the latest tag from being pushed.
 jobs:
 
   # Build multi-arch TimescaleDB images for both TSL and OSS code.
@@ -56,14 +56,12 @@ jobs:
 
       - name: Build and push multi-platform Docker image for postgres
         run: |
-            if [${{inputs.tag_latest}} == 'true']; then
-              export BETA=''
+            if [ "${{inputs.tag_latest}}" == "true" ]; then
+              export PRE_RELEASE=''
             fi
-            make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
-            TS_VERSION=$TS_VERSION TAG_VERSION="$TAG_VERSION" PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
-        env:
-            TAG_VERSION: "${{inputs.ORG}}/postgres:${{inputs.version}}-pg${{ matrix.pg }}"
-  # Build bitnami images of TimscaleDB.
+            make multi${{ matrix.oss }} ORG="$ORG" PG_VER="pg${{ matrix.pg }}" \
+            ${TS_VERSION:+TS_VERSION="$TS_VERSION"}  PREV_EXTRA="${{ matrix.oss }}" PRE_RELEASE="$PRE_RELEASE"
+ # Build bitnami images of TimscaleDB.
   # The images are built only for amd64, since it is the only supported architecture in the base image bitname/postgresql.
   # The images are only built for TSL code.
   timescaledb-bitnami:
@@ -85,10 +83,8 @@ jobs:
 
       - name: Build and push amd64 Docker image for TimescaleDB bitnami
         run: |
-          if [${{inputs.tag_latest}} == 'true']; then
-            export BETA=''
+          if [ "${{inputs.tag_latest}}" == "true" ]; then
+            export PRE_RELEASE=''
           fi
-          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} TS_VERSION=$TS_VERSION BETA=$BETA TAG_VERSION="$TAG_VERSION"
+          make push ORG="$ORG" PG_VER="pg${{ matrix.pg }}" ${TS_VERSION:+TS_VERSION="$TS_VERSION"}  PRE_RELEASE="$PRE_RELEASE"
         working-directory: bitnami
-        env:
-          TAG_VERSION: "${{inputs.ORG}}/timescaledb:${{inputs.version}}-pg${{ matrix.pg }}-bitnami"
