@@ -18,6 +18,9 @@ on:
         description: 'TS version to be used'
         required: false
         default: main
+      docker_tag:
+        description: 'The version used to tag the Docker image.'
+        required: true
 env:
   ORG: ${{inputs.ORG}}
   TS_VERSION: ${{inputs.ts_version}}
@@ -38,7 +41,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
             ref: ${{inputs.version}}
-
+      - name: patch libssl version 
+        run: |
+            sed -i '44s/libssl1.1/libssl3/' Dockerfile
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
         with:
@@ -56,13 +61,13 @@ jobs:
 
       - name: Build and push multi-platform Docker image for postgres
         run: |
-            if [${{inputs.tag_latest}} == 'true']; then
+            if ['${{inputs.tag_latest}}' == 'true']; then
               export BETA=''
             fi
             make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
             PREV_TS_VERSION=$TS_VERSION TAG_VERSION="$TAG_VERSION" PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
         env:
-            TAG_VERSION: "${{inputs.ORG}}/postgres:${{inputs.version}}-pg${{ matrix.pg }}"
+            TAG_VERSION: "${{inputs.ORG}}/postgres:${{inputs.docker_tag}}-pg${{ matrix.pg }}"
   # Build bitnami images of TimscaleDB.
   # The images are built only for amd64, since it is the only supported architecture in the base image bitname/postgresql.
   # The images are only built for TSL code.
@@ -85,10 +90,10 @@ jobs:
 
       - name: Build and push amd64 Docker image for TimescaleDB bitnami
         run: |
-          if [${{inputs.tag_latest}} == 'true']; then
+          if ['${{inputs.tag_latest}}' == 'true']; then
             export BETA=''
           fi
           make push ORG=$ORG PG_VER=pg${{ matrix.pg }} PREV_TS_VERSION=$TS_VERSION BETA=$BETA TAG_VERSION="$TAG_VERSION"
         working-directory: bitnami
         env:
-          TAG_VERSION: "${{inputs.ORG}}/timescaledb:${{inputs.version}}-pg${{ matrix.pg }}-bitnami"
+          TAG_VERSION: "${{inputs.ORG}}/timescaledb:${{inputs.docker_tag}}-pg${{ matrix.pg }}-bitnami"
