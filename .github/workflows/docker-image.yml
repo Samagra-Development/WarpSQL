@@ -66,7 +66,7 @@ jobs:
               export BETA=''
             fi
             make multi${{ matrix.oss }} ORG=$ORG PG_VER=pg${{ matrix.pg }} \
-            PREV_TS_VERSION=$TS_VERSION TAG_VERSION="$TAG_VERSION" PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
+            PREV_TS_VERSION=$TS_VERSION TS_VERSION=$TS_VERSION TAG_VERSION="$TAG_VERSION" PREV_EXTRA="${{ matrix.oss }}" BETA=$BETA
         env:
             TAG_VERSION: "${{inputs.ORG}}/postgres:${{inputs.docker_tag}}-pg${{ matrix.pg }}"
   # Build bitnami images of TimscaleDB.
@@ -94,7 +94,7 @@ jobs:
           if ['${{inputs.tag_latest}}' == 'true']; then
             export BETA=''
           fi
-          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} PREV_TS_VERSION=$TS_VERSION BETA=$BETA TAG_VERSION="$TAG_VERSION"
+          make push ORG=$ORG PG_VER=pg${{ matrix.pg }} PREV_TS_VERSION=$TS_VERSION TS_VERSION=$TS_VERSION BETA=$BETA TAG_VERSION="$TAG_VERSION"
         working-directory: bitnami
         env:
           TAG_VERSION: "${{inputs.ORG}}/timescaledb:${{inputs.docker_tag}}-pg${{ matrix.pg }}-bitnami"
