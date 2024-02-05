@@ -1,6 +1,7 @@
 # Version Policy
 
 WarpSQL adopts [Semantic Versioning(SemVer)](https://semver.org/) using the `MAJOR.MINOR.PATCH` format.
+For a summary of changes in the WarpSQL refer to the [CHANGELOG](../CHANGELOG.md).
 
 ## WarpSQL versions
 
