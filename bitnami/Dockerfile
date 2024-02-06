@@ -243,6 +243,36 @@ RUN set -eux \
         /tmp/*               \
         /var/tmp/* 
 
+# Add pg_repack Extention
+ARG PG_REPACK_VERSION
+
+RUN apt-get update \
+    && apt-get install -y  unzip \
+        build-essential \
+        liblz4-dev \
+        zlib1g-dev \
+        libssl-dev \
+        wget \
+# build pg_repack
+    && wget  -O /tmp/pg_repack-${PG_REPACK_VERSION}.zip "https://api.pgxn.org/dist/pg_repack/${PG_REPACK_VERSION}/pg_repack-${PG_REPACK_VERSION}.zip" \
+    && unzip  /tmp/pg_repack-${PG_REPACK_VERSION}.zip -d /tmp \
+    && cd /tmp/pg_repack-${PG_REPACK_VERSION} \
+    && make \
+    && make install \
+#clean
+    && apt-get autoremove --purge -y \
+        unzip \
+        build-essential \
+        liblz4-dev \
+        libssl-dev \
+        zlib1g-dev \
+        wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
