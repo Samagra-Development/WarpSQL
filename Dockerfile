@@ -132,3 +132,72 @@ RUN set -ex \
     && rm /tmp/pg_cron.tar.gz \
     && rm -rf /tmp/pg_cron \
     && apk del .pg_cron-deps .pg_cron-build-deps 
+
+# Add PostGIS Extension
+ARG POSTGIS_VERSION
+
+RUN set -eux \
+    && apk add --no-cache --virtual .fetch-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
+    && apk add --no-cache --virtual .build-deps \
+        \
+        gdal-dev \
+        geos-dev \
+        proj-dev \
+        autoconf \
+        automake \
+        clang15 \
+        cunit-dev \
+        file \
+        g++ \
+        gcc \
+        gettext-dev \
+        git \
+        json-c-dev \
+        libtool \
+        libxml2-dev \
+        llvm15-dev \
+        make \
+        pcre-dev \
+        perl \
+        protobuf-c-dev \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
+    && ./autogen.sh \
+    && ./configure \
+        --with-pcredir="$(pcre-config --prefix)" \
+    && make -j$(nproc) \
+    && make install \
+    \
+# add .postgis-rundeps
+    && apk add --no-cache --virtual .postgis-rundeps \
+        \
+        gdal \
+        geos \
+        proj \
+        \
+        json-c \
+        libstdc++ \
+        pcre \
+        protobuf-c \
+        \
+        ca-certificates \
+# clean
+    && cd / \
+    && rm -rf /usr/src/postgis \
+    && apk del .fetch-deps .build-deps 
