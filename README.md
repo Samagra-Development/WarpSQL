@@ -21,18 +21,19 @@ Bootstrapped from [TimescaleDB](https://github.com/timescale/timescaledb-docker)
 ```yaml
 version: '3.6'
 services:
-  warpsql:
-    container_name: warpsql
+  timescaledb:
+    container_name: timescaledb
     image: samagragovernance/postgres:latest-pg15
     restart: always
     ports:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: warpSQLUser
-      POSTGRES_PASSWORD: warpSQLPass
+    env_file:
+      - .env.sample
 ```
+Users need to create their own .env.sample file with their  specific POSTGRES_USER and POSTGRES_PASSWORD.
+
 
 WarpSQL is a powerful solution that provides opinionated extensions to Postgres, conveniently packaged as a single Docker deployment. It eliminates the need to install multiple separate databases by offering a comprehensive set of features in one place (although not everything, as some features might not be included).
 

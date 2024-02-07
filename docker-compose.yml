@@ -8,9 +8,8 @@ services:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: timescaledb
-      POSTGRES_PASSWORD: postgrespassword
+    env_file:
+      - .env.sample
 
   graphql-engine:
     image: hasura/graphql-engine:latest
