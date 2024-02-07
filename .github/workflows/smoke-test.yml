@@ -51,7 +51,24 @@ jobs:
 
       - name: Install psql
         run: sudo apt install postgresql-client
+ 
+      - name: AWS S3 Extension Tracker
+        run: |
+          docker run --rm -d \
+          --name ext-tracker \
+          -v /path/to/ext-tracker-data:/data \
+          -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+          -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+          -e AWS_DEFAULT_REGION=Global \
+          minio/mc \
+          mb s3://my-bucket
 
+      - name: Run Smoke Test with Extension Tracker
+        run: |
+          docker exec ext-tracker mc mb s3://my-bucket
+          docker exec ext-tracker mc cp ./local-file.txt s3://my-bucket/path/to/remote-file.txt
+          docker exec ext-tracker mc ls s3://my-bucket 
+ 
       - name: Run the smoke test
         run: |
           set -eu
