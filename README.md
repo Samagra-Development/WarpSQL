@@ -5,10 +5,11 @@
 
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
-- [x] [PgCron ](https://github.com/citusdata/pg_cron)
+- [x] [PgCron](https://github.com/citusdata/pg_cron)
 - [x] [PostGIS](https://postgis.net)
 - [x] [Citus](https://www.citusdata.com/)
 - [x] [Pg Repack](https://github.com/reorg/pg_repack)
+- [x] [PgAutoFailover](https://github.com/hapostgres/pg_auto_failover)
 ## Releases
 - [Versioning Policy](./docs/version-policy.md)
 
