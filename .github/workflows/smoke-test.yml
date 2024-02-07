@@ -52,6 +52,24 @@ jobs:
       - name: Install psql
         run: sudo apt install postgresql-client
 
+      - name: Set Max Connection Limit
+        run: |
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          psql -h localhost -U postgres -c "ALTER SYSTEM SET max_connections = '100';"
+
+      - name: Verify Max Connection Limit
+        run: |
+          export PGHOST=localhost
+          export PGUSER=postgres
+          export PGPASSWORD=test1234
+          MAX_CONNECTIONS=$(PGPASSWORD=test1234 psql -h localhost -U postgres -d postgres -c "SHOW max_connections;" | grep -oP '(?<=row )[0-9]+')
+          if [ "$MAX_CONNECTIONS" -ne "10" ]; then
+            echo "Max connections is not set correctly!"
+            exit 1
+          fi
+        
       - name: Run the smoke test
         run: |
           set -eu
