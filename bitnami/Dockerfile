@@ -156,6 +156,58 @@ RUN set -e \
         /tmp/*               \
         /var/tmp/* 
 
+# Add PostGIS Extension
+ARG POSTGIS_VERSION
+
+RUN set -eux \
+    && apt update \
+    && apt install -y \
+        ca-certificates \
+        openssl \
+        tar \
+        wget \
+        gettext \
+        automake \
+        libltdl-dev \
+        libxml2-dev \
+        libgeos-dev \
+        libproj-dev \
+        libprotobuf-c-dev \
+        protobuf-c-compiler \
+        g++\
+        gcc \
+        make \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
+    && ./autogen.sh \
+    && ./configure \
+        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"\
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+# clean
+    && apt-get autoremove --purge -y \
+        wget \
+        g++\
+        gcc \
+        make \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
