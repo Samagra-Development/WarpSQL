@@ -7,6 +7,7 @@ PG_VER_NUMBER=$(shell echo $(PG_VER) | cut -c3-)
 TS_VERSION=2.13.0
 PG_CRON_VERSION=v1.6.0
 POSTGIS_VERSION=3.4.1 
+CITUS_VERSION=12.1.0
 PREV_TS_VERSION=$(shell wget --quiet -O - https://raw.githubusercontent.com/timescale/timescaledb/${TS_VERSION}/version.config | grep update_from_version | sed -e 's!update_from_version = !!')
 PREV_TS_IMAGE="timescale/timescaledb:$(PREV_TS_VERSION)-pg$(PG_VER_NUMBER)$(PREV_EXTRA)"
 PREV_IMAGE=$(shell if docker pull $(PREV_TS_IMAGE) >/dev/null; then echo "$(PREV_TS_IMAGE)"; else echo "postgres:$(PG_VER_NUMBER)-alpine"; fi )
@@ -30,7 +31,8 @@ DOCKER_BUILD_ARGS = --build-arg TS_VERSION=$(TS_VERSION) \
 					--build-arg PG_VERSION=$(PG_VER_NUMBER) \
 					--build-arg PREV_IMAGE=$(PREV_IMAGE) \
 					--build-arg PG_CRON_VERSION=$(PG_CRON_VERSION) \
-					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) 
+					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+					--build-arg CITUS_VERSION=$(CITUS_VERSION) 
 
 
 default: image
