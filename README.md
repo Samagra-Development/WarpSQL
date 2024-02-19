@@ -6,6 +6,7 @@
 - [x] [PgVector](https://github.com/pgvector/pgvector)
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [x] [PgCron ](https://github.com/citusdata/pg_cron)
+- [x] [PostGIS](https://postgis.net)
 - [ ] [Citus](https://www.citusdata.com/)
 
 ## Releases
