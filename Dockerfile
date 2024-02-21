@@ -201,3 +201,34 @@ RUN set -eux \
     && cd / \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
+
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+ARG ZOMBODB_VERSION
+ARG PG_VERSION
+# RUN echo ${PG_VERSION} && exit 1
+RUN apk add --no-cache --virtual .zombodb-build-deps \
+    git \
+	curl \
+	bash \
+	ruby-dev \
+	ruby-etc \
+	musl-dev \
+	make \
+	gcc \
+	coreutils \
+	util-linux-dev \
+	musl-dev \
+	openssl-dev \
+    clang15 \
+	tar \
+    && gem install --no-document fpm \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+    && PATH=$HOME/.cargo/bin:$PATH \
+    && cargo install cargo-pgrx --version 0.9.3 \
+    && cargo pgrx init --pg${PG_VERSION}=$(which pg_config) \
+    && git clone --depth 1 --branch ${ZOMBODB_VERSION} https://github.com/zombodb/zombodb.git \
+    && cd ./zombodb \
+    && cargo pgrx install --release \
+    && cd .. \
+    && rm -rf ./zombodb \
+    && apk del .zombodb-build-deps
