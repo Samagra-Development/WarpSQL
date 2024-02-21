@@ -208,6 +208,46 @@ RUN set -eux \
         /tmp/*               \
         /var/tmp/* 
 
+# Install zombodb extension
+ARG PG_MAJOR
+ENV RUSTFLAGS="-C target-cpu=native target-cpu=native link-arg=-fuse-ld=lld"
+RUN apt-get update -y -qq --fix-missing \
+    && apt-get install -y wget gnupg \
+    && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list \
+    && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" >> /etc/apt/sources.list \
+    && wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 \
+    && apt update \
+    && apt-get update -y --fix-missing \
+    && apt-get install -y git curl clang-14 llvm-14 gcc make build-essential libz-dev zlib1g-dev  pkg-config libreadline-dev libgdbm-dev libssl1.0-dev \
+    && wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz \
+    && tar -xzvf openssl-1.0.2l.tar.gz \
+    && cd openssl-1.0.2l \
+    && ./config \
+    && make install \
+    && ln -sf /usr/local/ssl/bin/openssl `which openssl` \
+    && mkdir ruby  \
+	&& cd ruby \
+	&& wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz \
+	&& tar xvfz ruby-2.3.0.tar.gz \
+	&& cd ruby-2.3.0 \
+	&& ./configure  --with-openssl-dir=/usr/include/openssl-1.0 \
+	&& make -j64 \
+	&& make install \
+    && gem install --no-document fpm \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/.cargo/bin:$PATH" \
+    && export PGRX_HOME="/.pgrx/" \
+    && mkdir -p $PGRX_HOME \
+    && cargo install cargo-pgrx --version 0.9.3 \
+    && cargo pgrx init --pg${PG_MAJOR}=/opt/bitnami/postgresql/bin/pg_config \
+    && git clone --depth 1 --branch ${ZOMBODB_VERSION} https://github.com/zombodb/zombodb.git \
+    && cd zombodb \
+    && export PATH="/.cargo/bin:$PATH" && cargo pgrx install --release \
+    && cd / \
+    && apt-get autoremove --purge -y git curl clang-14  gcc make build-essential   wget  \
+    && rm -rf .cargo .gem  openssl-1.0.2l .rustup openssl-1.0.2l.tar.gz
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]

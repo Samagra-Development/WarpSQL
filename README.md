@@ -7,6 +7,7 @@
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [x] [PgCron ](https://github.com/citusdata/pg_cron)
 - [x] [PostGIS](https://postgis.net)
+- [x] [ZomboDB](https://github.com/zombodb/zombodb)
 - [ ] [Citus](https://www.citusdata.com/)
 
 ## Releases
