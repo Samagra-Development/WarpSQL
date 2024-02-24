@@ -319,3 +319,75 @@ RUN set -eux \
     && cd / \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
     && apk del .postgresql-hll-build-deps 
+
+# Install pg_jobmon
+ARG PG_JOBMON_VERSION
+RUN set -e \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-deps \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && cd /tmp\
+    && wget -O pg_jobmon.tar.gz "https://github.com/omniti-labs/pg_jobmon/archive/v$PG_JOBMON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_jobmon \
+    && tar \
+        --extract \
+        --file pg_jobmon.tar.gz \
+        --directory /tmp/pg_jobmon \
+        --strip-components 1 \
+    \
+    && apk add --no-cache --virtual .pg_jobmon-build-deps \
+        autoconf \
+        automake \
+        g++ \
+        clang15 \
+        llvm15 \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    && cd /tmp/pg_jobmon \
+    && ls -alh . \
+    && make \
+    && make install \
+    && cd / \
+    && apk del .pg_jobmon-deps .pg_jobmon-build-deps \
+    && rm -rf /tmp/pg_jobmon \
+    && rm /tmp/pg_jobmon.tar.gz 
+
+# Adding pg_partman 
+ARG PG_PARTMAN_VERSION
+
+RUN set -e \
+    && cd /tmp\
+    && apk add --no-cache --virtual .pg_partman-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .pg_partman-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_partman.tar.gz "https://github.com/pgpartman/pg_partman/archive/v$PG_PARTMAN_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_partman \
+    && tar \
+        --extract \
+        --file pg_partman.tar.gz \
+        --directory /tmp/pg_partman \
+        --strip-components 1 \
+    && cd /tmp/pg_partman \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/pg_partman.tar.gz \
+    && rm -rf /tmp/pg_partman \
+    && apk del .pg_partman-deps .pg_partman-build-deps 
