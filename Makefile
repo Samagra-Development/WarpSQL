@@ -13,6 +13,7 @@ PG_AUTO_FAILOVER_VERSION=2.1
 POSTGRES_HLL_VERSION=2.18
 PG_JOBMON_VERSION=1.4.1
 PG_PARTMAN_VERSION=5.0.1
+HYPOPG_VERSION=1.4.0
 PREV_TS_VERSION=$(shell wget --quiet -O - https://raw.githubusercontent.com/timescale/timescaledb/${TS_VERSION}/version.config | grep update_from_version | sed -e 's!update_from_version = !!')
 PREV_TS_IMAGE="timescale/timescaledb:$(PREV_TS_VERSION)-pg$(PG_VER_NUMBER)$(PREV_EXTRA)"
 PREV_IMAGE=$(shell if docker pull $(PREV_TS_IMAGE) >/dev/null; then echo "$(PREV_TS_IMAGE)"; else echo "postgres:$(PG_VER_NUMBER)-alpine"; fi )
@@ -42,8 +43,8 @@ DOCKER_BUILD_ARGS = --build-arg TS_VERSION=$(TS_VERSION) \
 					--build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION)  \
 					--build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)\
 					--build-arg PG_JOBMON_VERSION=$(PG_JOBMON_VERSION) \
-					--build-arg PG_PARTMAN_VERSION=$(PG_PARTMAN_VERSION)
-
+					--build-arg PG_PARTMAN_VERSION=$(PG_PARTMAN_VERSION) \
+					--build-arg HYPOPG_VERSION=$(HYPOPG_VERSION) 
 
 
 default: image

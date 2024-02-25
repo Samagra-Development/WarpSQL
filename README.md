@@ -13,7 +13,7 @@
 - [x] [PgAutoFailover](https://github.com/hapostgres/pg_auto_failover)
 - [x] [PgJobmon](https://github.com/omniti-labs/pg_jobmon)
 - [x] [PgPartman](https://github.com/pgpartman/pg_partman)
-
+- [x] [HypoPG](https://github.com/HypoPG/hypopg)
 
 ## Releases
 - [Versioning Policy](./docs/version-policy.md)

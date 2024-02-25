@@ -391,3 +391,39 @@ RUN set -e \
     && rm /tmp/pg_partman.tar.gz \
     && rm -rf /tmp/pg_partman \
     && apk del .pg_partman-deps .pg_partman-build-deps 
+
+
+# Adding hypo_pg 
+ARG HYPOPG_VERSION
+
+RUN set -ex \
+    && cd /tmp\
+    && apk add --no-cache --virtual .hypopg-deps \
+    ca-certificates \
+    openssl \
+    tar \
+    && apk add --no-cache --virtual .hypopg-build-deps \
+    autoconf \
+    automake \
+    g++ \
+    clang15 \
+    llvm15 \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O hypopg.tar.gz "https://github.com/HypoPG/hypopg/archive/refs/tags/${HYPOPG_VERSION}.tar.gz" \
+    && mkdir -p /tmp/hypopg \
+    && tar \
+        --extract \
+        --file hypopg.tar.gz \
+        --directory /tmp/hypopg \
+        --strip-components 1 \
+    && cd /tmp/hypopg \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/hypopg.tar.gz \
+    && rm -rf /tmp/hypopg \
+    && apk del .hypopg-deps .hypopg-build-deps 
