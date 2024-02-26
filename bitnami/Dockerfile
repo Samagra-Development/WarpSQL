@@ -208,6 +208,45 @@ RUN set -eux \
         /tmp/*               \
         /var/tmp/* 
 
+ARG PLV8_VERSION
+
+RUN buildDependencies="build-essential \
+    ca-certificates \
+    curl \
+    git-core \
+    gpp \
+    cpp \
+	gnupg dirmngr \
+    pkg-config \
+    apt-transport-https \
+    cmake \
+    libc++-dev \
+    libncurses5 \
+    libc++abi-dev \
+	libstdc++-12-dev \
+	wget \
+	zlib1g-dev \
+    postgresql-server-dev-15 \
+	libtinfo5" \
+    runtimeDependencies="libc++1" \
+    && set -ex   \
+    && apt-get update && apt-get install -y --no-install-recommends ${buildDependencies} ${runtimeDependencies} \
+	&& mkdir -p /tmp/build \
+    && curl -o /tmp/build/v$PLV8_VERSION.tar.gz -SL "https://github.com/plv8/plv8/archive/refs/tags/v${PLV8_VERSION}.tar.gz" \
+    && cd /tmp/build \
+    && tar -xzf /tmp/build/v$PLV8_VERSION.tar.gz -C /tmp/build/ \
+    && cd /tmp/build/plv8-$PLV8_VERSION \
+    && git clone --depth 1 https://github.com/bnoordhuis/v8-cmake.git ./deps/v8-cmake \
+    && git init \
+    && make  \
+    && make install \
+    && strip /opt/bitnami/postgresql/lib/plv8-${PLV8_VERSION}.so \
+    && apt-get clean \
+    && apt-get remove -y ${buildDependencies} \
+    && apt-get autoremove -y \
+    && rm -rf tmp/build /var/lib/apt/lists/*
+
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]

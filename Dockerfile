@@ -201,3 +201,39 @@ RUN set -eux \
     && cd / \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
+# Add plv8 Extension
+ARG PLV8_VERSION
+
+RUN set -ex && apk update \
+    && apk add --no-cache --virtual .v8-build \
+        libstdc++-dev \
+        binutils \
+        gcc \
+        libc-dev \
+        g++ \
+        ca-certificates \
+        curl \
+        make \
+        libbz2 \
+        linux-headers \
+        cmake \
+        clang15-libs \
+        clang15 \
+        llvm15 \
+        ncurses-libs \
+        zlib-dev \
+        git \
+        python3 \
+    && mkdir -p /tmp/build \
+    && curl -o /tmp/build/v$PLV8_VERSION.tar.gz -SL "https://github.com/plv8/plv8/archive/refs/tags/v${PLV8_VERSION}.tar.gz" \
+    && cd /tmp/build \
+    && tar -xzf /tmp/build/v$PLV8_VERSION.tar.gz -C /tmp/build/ \
+    && cd /tmp/build/plv8-$PLV8_VERSION \
+    && git clone --depth 1 https://github.com/bnoordhuis/v8-cmake.git ./deps/v8-cmake \
+    && git init \
+    && make  \
+    && make install \
+    && strip /usr/local/lib/postgresql/plv8-${PLV8_VERSION}.so \
+    && apk del --no-network .v8-build; \
+    && rm -rf /tmp/* /var/tmp/*
+
