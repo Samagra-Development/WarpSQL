@@ -75,7 +75,7 @@ RUN set -ex \
 
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'timescaledb,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'timescaledb,pg_cron,citus'" >> /usr/local/share/postgresql/postgresql.conf.sample
 # Adding PG Vector
 
 RUN cd /tmp
@@ -201,3 +201,38 @@ RUN set -eux \
     && cd / \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps 
+
+## Adding Citus
+
+ARG CITUS_VERSION
+# Install Citus dependencies 
+RUN set -ex \
+    && apk add --no-cache --virtual .citus-deps \
+    curl \
+    jq \
+# Install Citus
+    && apk add --no-cache --virtual .citus-build-deps \
+        gcc \
+        libc-dev \
+        make \
+        curl-dev \
+        lz4-dev \
+        zstd-dev \
+        clang-15 \
+        krb5-dev \
+        icu-dev \
+        libxslt-dev \
+        libxml2-dev \
+        llvm15-dev \
+    && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/citus.tar.gz \
+    && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
+    && cd /tmp/citus-${CITUS_VERSION} \
+    && PATH="/usr/local/pgsql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
+    && apk del .citus-deps .citus-build-deps
+

@@ -208,6 +208,39 @@ RUN set -eux \
         /tmp/*               \
         /var/tmp/* 
 
+# add Citus
+ARG CITUS_VERSION
+RUN set -eux \
+    && apt-get update \
+    && apt-get install -y libc-dev make libssl-dev curl gcc liblz4-dev libzstd-dev clang libkrb5-dev libicu-dev libxslt1-dev libxml2-dev llvm-dev libcurl4-openssl-dev \
+    && CITUS_DOWNLOAD_URL="https://github.com/citusdata/citus/archive/refs/tags/v${CITUS_VERSION}.tar.gz" \
+    && curl -L -o /tmp/citus.tar.gz "${CITUS_DOWNLOAD_URL}" \
+    && tar -C /tmp -xvf /tmp/citus.tar.gz \
+    && addgroup --system postgres \
+    && adduser --system --ingroup postgres --home /opt/bitnami/postgresql --no-create-home postgres \
+    && chown -R postgres:postgres /tmp/citus-${CITUS_VERSION} \
+    && cd /tmp/citus-${CITUS_VERSION} \
+    && PATH="/opt/bitnami/postgresql/bin:$PATH" ./configure \
+    && make \
+    && make install \
+    && cd ~ \
+    && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
+    \
+    && apt-get autoremove --purge -y \
+            \
+            build-essential \
+            libssl-dev \
+            gcc \
+            libc-dev \
+            make \
+    && apt-get clean -y \
+    && rm -rf \
+        /build \
+        "${HOME}/.cache" \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
