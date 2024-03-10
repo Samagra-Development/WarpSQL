@@ -177,6 +177,7 @@ RUN set -eux \
         g++\
         gcc \
         make \
+        libpcre3-dev \
     && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz" \
     && mkdir -p /usr/src/postgis \
     && tar \
@@ -189,10 +190,11 @@ RUN set -eux \
 # build PostGIS
     \
     && cd /usr/src/postgis \
-    && gettextize \
     && ./autogen.sh \
     && ./configure \
-        --with-pcredir="$(pcre-config --prefix)"  --with-geosconfig="/usr/bin/geos-config"\
+        --with-pcredir="$(pcre-config --prefix)"  \
+        --with-geosconfig="/usr/bin/geos-config" \
+        CFLAGS="-idirafter'/opt/bitnami/postgresql/include'"  # # Prefer latest system headers over Bitnami outdated libraries \
     && make -j$(nproc) \
     && make install \
     && cd / \
