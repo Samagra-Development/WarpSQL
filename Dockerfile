@@ -236,3 +236,29 @@ RUN set -ex \
     && rm -rf /tmp/citus.tar.gz /tmp/citus-${CITUS_VERSION} \
     && apk del .citus-deps .citus-build-deps
 
+
+
+## Adding pg_repack
+ARG PG_REPACK_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_repack-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        clang15 \
+        gawk \
+        llvm15 \
+        gcc \
+        musl-dev \
+# build pg_repack
+    && wget  -O /tmp/pg_repack-${PG_REPACK_VERSION}.zip "https://api.pgxn.org/dist/pg_repack/${PG_REPACK_VERSION}/pg_repack-${PG_REPACK_VERSION}.zip" \
+    && unzip  /tmp/pg_repack-${PG_REPACK_VERSION}.zip -d /tmp \
+    && cd /tmp/pg_repack-${PG_REPACK_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_repack-${PG_REPACK_VERSION} /tmp/pg_repack.zip \
+    && apk del .pg_repack-build-deps 

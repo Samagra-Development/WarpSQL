@@ -8,7 +8,7 @@
 - [x] [PgCron ](https://github.com/citusdata/pg_cron)
 - [x] [PostGIS](https://postgis.net)
 - [x] [Citus](https://www.citusdata.com/)
-
+- [x] [Pg Repack](https://github.com/reorg/pg_repack)
 ## Releases
 - [Versioning Policy](./docs/version-policy.md)
 

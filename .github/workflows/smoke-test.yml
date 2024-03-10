@@ -75,6 +75,9 @@ jobs:
               psql -c "INSERT INTO test_distributed_table (data) VALUES ('test data');"
               psql -c "SELECT * FROM test_distributed_table;"
 
+              echo "Test pg_repack Extension"
+              psql -c "CREATE EXTENSION pg_repack;"
+              psql -c "select repack.version(), repack.version_sql();"
               break
             fi
             sleep 1
