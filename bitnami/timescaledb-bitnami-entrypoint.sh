@@ -4,9 +4,9 @@
 # shared preload list, or else it gets overwritten.
 if [ -z "$POSTGRESQL_SHARED_PRELOAD_LIBRARIES" ]
 then
-    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="timescaledb,pg_cron,citus"
+    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb,pg_cron"
 else
-    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="$POSTGRESQL_SHARED_PRELOAD_LIBRARIES,timescaledb,pg_cron,citus"
+    POSTGRESQL_SHARED_PRELOAD_LIBRARIES="citus,timescaledb,pg_cron,$POSTGRESQL_SHARED_PRELOAD_LIBRARIES"
 fi
 export POSTGRESQL_SHARED_PRELOAD_LIBRARIES
 
