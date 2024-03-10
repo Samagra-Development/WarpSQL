@@ -75,7 +75,7 @@ RUN set -ex \
 
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'timescaledb,pg_cron,citus'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
 # Adding PG Vector
 
 RUN cd /tmp
@@ -218,7 +218,7 @@ RUN set -ex \
         curl-dev \
         lz4-dev \
         zstd-dev \
-        clang-15 \
+        clang15 \
         krb5-dev \
         icu-dev \
         libxslt-dev \
