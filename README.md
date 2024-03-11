@@ -4,7 +4,7 @@ WarpSQL is a powerful solution that provides opinionated extensions to Postgres,
 
 ## Key features
 - **Simple Setup**: With WarpSQL, set up your Postgres database with all necessary extensions at once, saving you time and hassle.
-- **Smooth Integration**: WarpSQL seamlessly integrates popular extensions like PgVector, TimescaleDB, Citus, and PostGIS, making your database management straightforward and efficient.
+- **Smooth Integration**: WarpSQL seamlessly integrates popular extensions like PgVector, TimescaleDB, Citus, PostGIS, etc making your database management straightforward and efficient.
 
 ## Test on GitPod
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/postgres-tsdb-vector-docker)
