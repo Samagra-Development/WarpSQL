@@ -75,7 +75,7 @@ RUN set -ex \
 
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_cron'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_cron,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
 # Adding PG Vector
 
 RUN cd /tmp
@@ -262,3 +262,34 @@ RUN set -eux \
     && cd / \
     && rm -rf /tmp/pg_repack-${PG_REPACK_VERSION} /tmp/pg_repack.zip \
     && apk del .pg_repack-build-deps 
+
+# Adding pgautofailover
+ARG PG_AUTO_FAILOVER_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .pg_auto_failover-build-deps \
+        make \ 
+        gcc \
+        musl-dev \
+        krb5-dev \ 
+        openssl-dev \
+        clang15 \ 
+        ncurses-dev \
+        linux-headers \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \
+        libedit-dev \
+        libxml2-utils \
+        libxslt-dev \
+        llvm15 \
+# build pg_auto_failover
+    && wget  -O /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip "https://github.com/hapostgres/pg_auto_failover/archive/refs/tags/v${PG_AUTO_FAILOVER_VERSION}.zip" \
+    && unzip  /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION}.zip -d /tmp \
+    && ls -alh /tmp \
+    && cd /tmp/pg_auto_failover-${PG_AUTO_FAILOVER_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
+    && apk del .pg_auto_failover-build-deps
