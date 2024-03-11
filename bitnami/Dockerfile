@@ -427,6 +427,55 @@ RUN set -ex \
     && rm /tmp/pg_partman.tar.gz \
     && rm -rf /tmp/pg_partman 
     
+# Adding hypopg 
+ARG HYPOPG_VERSION
+
+RUN set -e \
+    && cd /tmp\
+    && apt-get update \
+    && apt-get install -y  \
+    ca-certificates \
+    openssl \
+    tar \
+    autoconf \
+    automake \
+    g++ \
+    clang \
+    llvm \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    wget \
+    && wget -O hypopg.tar.gz "https://github.com/HypoPG/hypopg/archive/refs/tags/${HYPOPG_VERSION}.tar.gz" \
+    && mkdir -p /tmp/hypopg \
+    && tar \
+        --extract \
+        --file hypopg.tar.gz \
+        --directory /tmp/hypopg \
+        --strip-components 1 \
+    && cd /tmp/hypopg \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && rm /tmp/hypopg.tar.gz \
+    && rm -rf /tmp/hypopg \
+    && apt-get autoremove --purge -y \
+            autoconf \
+            automake \
+            g++ \
+            clang \
+            llvm \
+            make \
+            perl \
+            wget \
+    && apt-get clean -y \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/*               \
+        /var/tmp/* 
+        
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]

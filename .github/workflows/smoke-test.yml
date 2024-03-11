@@ -95,6 +95,10 @@ jobs:
               psql -c "CREATE SCHEMA partman;"
               psql -c "CREATE EXTENSION pg_partman SCHEMA partman;"
 
+              echo "Test HypoPG Extension"
+              psql -c "CREATE EXTENSION hypopg;"
+              psql -c "CREATE TABLE hypo AS SELECT id, 'line ' || id AS val FROM generate_series(1,10000) id;"
+              psql -c "EXPLAIN SELECT * FROM hypo WHERE id = 1;"
               break
             fi
             sleep 1
