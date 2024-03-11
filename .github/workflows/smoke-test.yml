@@ -86,6 +86,15 @@ jobs:
               echo "Test pgautofailover Extension"
               psql -c "CREATE EXTENSION pgautofailover CASCADE;"
               psql -c "SELECT pgautofailover.formation_settings();"
+              
+              echo "Test pg_jobmon Extension"
+              psql -c " CREATE SCHEMA jobmon;"
+              psql -c "CREATE EXTENSION pg_jobmon SCHEMA jobmon cascade;"
+
+              echo "Test pg_partman Extension"
+              psql -c "CREATE SCHEMA partman;"
+              psql -c "CREATE EXTENSION pg_partman SCHEMA partman;"
+
               break
             fi
             sleep 1

@@ -11,6 +11,10 @@
 - [x] [Citus](https://www.citusdata.com/)
 - [x] [Pg Repack](https://github.com/reorg/pg_repack)
 - [x] [PgAutoFailover](https://github.com/hapostgres/pg_auto_failover)
+- [x] [PgJobmon](https://github.com/omniti-labs/pg_jobmon)
+- [x] [PgPartman](https://github.com/pgpartman/pg_partman)
+
+
 ## Releases
 - [Versioning Policy](./docs/version-policy.md)
 

@@ -339,6 +339,94 @@ RUN apt-get update \
         /tmp/*               \
         /var/tmp/* 
 
+# Install pg_jobmon
+ARG PG_JOBMON_VERSION 
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y  \
+        ca-certificates \
+        openssl \
+        tar \
+        wget \
+        autoconf \
+        automake \
+        g++ \
+        clang \
+        llvm \
+        libtool \
+        libxml2-dev \
+        make \
+        perl \
+    \
+    && cd /tmp\
+    && wget -O pg_jobmon.tar.gz "https://github.com/omniti-labs/pg_jobmon/archive/v$PG_JOBMON_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_jobmon \
+    && tar \
+        --extract \
+        --file pg_jobmon.tar.gz \
+        --directory /tmp/pg_jobmon \
+        --strip-components 1 \
+    \
+    && cd /tmp/pg_jobmon \
+    && make \
+    && make install \
+    && cd / \
+    && apt-get autoremove --purge -y \
+        wget \
+        autoconf \
+        automake \
+        clang \
+        llvm \
+        make \
+        perl \
+    && apt-get clean -y \
+    && rm -rf /tmp/pg_jobmon \
+    && rm /tmp/pg_jobmon.tar.gz 
+
+# Adding pg_partman 
+ARG PG_PARTMAN_VERSION 
+
+RUN set -ex \
+    && cd /tmp\
+    && apt-get update \
+    && apt-get install -y  \
+    ca-certificates \
+    openssl \
+    tar \
+    autoconf \
+    automake \
+    g++ \
+    wget \
+    clang \
+    llvm \
+    libtool \   
+    libxml2-dev \
+    make \
+    perl \
+    && wget -O pg_partman.tar.gz "https://github.com/pgpartman/pg_partman/archive/v$PG_PARTMAN_VERSION.tar.gz" \
+    && mkdir -p /tmp/pg_partman \
+    && tar \
+        --extract \
+        --file pg_partman.tar.gz \
+        --directory /tmp/pg_partman \
+        --strip-components 1 \
+    && cd /tmp/pg_partman \
+    && make \
+    && make install \
+    # clean
+    && cd / \
+    && apt-get autoremove --purge -y \
+        wget \
+        autoconf \
+        automake \
+        clang \
+        llvm \
+        make \
+        perl \
+    && apt-get clean -y \
+    && rm /tmp/pg_partman.tar.gz \
+    && rm -rf /tmp/pg_partman 
+    
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]
