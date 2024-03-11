@@ -293,3 +293,29 @@ RUN set -eux \
     && cd / \
     && rm -rf /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION} /tmp/pg_auto_failove-${PG_AUTO_FAILOVER_VERSION}.zip \
     && apk del .pg_auto_failover-build-deps
+
+## Adding postgresql-hll
+ARG POSTGRES_HLL_VERSION
+RUN set -eux \
+    && apk add --no-cache --virtual .postgresql-hll-build-deps \
+        openssl-dev \
+        zstd-dev \
+        lz4-dev \
+        zlib-dev \ 
+        make \
+        git \
+        clang15 \
+        gawk \
+        llvm15 \
+        g++ \
+        musl-dev \
+# build postgresql-hll
+    && wget  -O /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip "https://github.com/citusdata/postgresql-hll/archive/refs/tags/v${POSTGRES_HLL_VERSION}.zip" \
+    && unzip  /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip -d /tmp \
+    && cd /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} \
+    && make \
+    && make install \
+# clean 
+    && cd / \
+    && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
+    && apk del .postgresql-hll-build-deps 

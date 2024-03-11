@@ -65,6 +65,10 @@ jobs:
               psql -c "INSERT INTO test_geometry_table (geom) VALUES (ST_GeomFromText('POINT(0 0)', 4326));"
               psql -c "SELECT * FROM test_geometry_table;"
 
+              echo "Test HyperLogLog Extension"
+              psql -c "CREATE EXTENSION hll;"
+              psql -c "select hll_hash_text('hello world');"
+
               echo "Test Citus Extension"
               psql -c "CREATE EXTENSION citus;"
               psql -c "SELECT * FROM citus_version();"

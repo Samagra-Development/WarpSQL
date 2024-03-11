@@ -7,6 +7,7 @@
 - [x] [TimescaleDB](https://github.com/timescale/timescaledb)
 - [x] [PgCron](https://github.com/citusdata/pg_cron)
 - [x] [PostGIS](https://postgis.net)
+- [x] [postgresql-hll](https://github.com/citusdata/postgresql-hll)
 - [x] [Citus](https://www.citusdata.com/)
 - [x] [Pg Repack](https://github.com/reorg/pg_repack)
 - [x] [PgAutoFailover](https://github.com/hapostgres/pg_auto_failover)

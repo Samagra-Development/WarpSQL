@@ -10,6 +10,7 @@ POSTGIS_VERSION=3.4.2
 CITUS_VERSION=12.1.0
 PG_REPACK_VERSION=1.5.0
 PG_AUTO_FAILOVER_VERSION=2.1
+POSTGRES_HLL_VERSION=2.18
 PREV_TS_VERSION=$(shell wget --quiet -O - https://raw.githubusercontent.com/timescale/timescaledb/${TS_VERSION}/version.config | grep update_from_version | sed -e 's!update_from_version = !!')
 PREV_TS_IMAGE="timescale/timescaledb:$(PREV_TS_VERSION)-pg$(PG_VER_NUMBER)$(PREV_EXTRA)"
 PREV_IMAGE=$(shell if docker pull $(PREV_TS_IMAGE) >/dev/null; then echo "$(PREV_TS_IMAGE)"; else echo "postgres:$(PG_VER_NUMBER)-alpine"; fi )
@@ -35,6 +36,7 @@ DOCKER_BUILD_ARGS = --build-arg TS_VERSION=$(TS_VERSION) \
 					--build-arg PG_CRON_VERSION=$(PG_CRON_VERSION) \
 					--build-arg PG_REPACK_VERSION=$(PG_REPACK_VERSION)\
 					--build-arg POSTGIS_VERSION=$(POSTGIS_VERSION) \
+					--build-arg POSTGRES_HLL_VERSION=$(POSTGRES_HLL_VERSION)\
 					--build-arg CITUS_VERSION=$(CITUS_VERSION) \
 					--build-arg PG_AUTO_FAILOVER_VERSION=$(PG_AUTO_FAILOVER_VERSION) 
 
