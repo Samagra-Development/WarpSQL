@@ -12,24 +12,27 @@ env:
 
 jobs:
   smoketest:
-    name: PG${{ matrix.pg }}-${{ matrix.type }}
+    name: PG${{ matrix.pg }}-${{ matrix.type }}${{ matrix.oss }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        pg: [15]
-        type: ['normal', 'bitnami']
+        pg: [14, 15, 16]
+        type: ['alpine', 'bitnami']
+        oss: [ "", "-oss" ]
     steps:
       - name: Check out the source
         uses: actions/checkout@v3
 
-      - name: Build Docker Image for TimescaleDB
+      - name: Build Docker Alpine Image
+        if: matrix.type == 'alpine'
         run: |
-          if [ ${{ matrix.type }} == bitnami ]
-          then
-            cd bitnami
-          fi
-          make image PG_VER=pg${{ matrix.pg }} TAG_VERSION=smoketest-image BETA=1
+          make image${{ matrix.oss }} PG_VER=pg${{ matrix.pg }} TAG_VERSION=smoketest-image PRE_RELEASE=1 TAG_OSS='-t smoketest-image'
+      - name: Build Docker Bitnami Image 
+        if: matrix.type == 'bitnami'
+        run: |
+          cd bitnami
+          make image PG_VER=pg${{ matrix.pg }} TAG_VERSION=smoketest-image PRE_RELEASE=1
 
       - name: Install psql
         run: sudo apt install postgresql-client
