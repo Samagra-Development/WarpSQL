@@ -81,7 +81,7 @@ default: image
 
 image: .build_$(WARPSQL_VERSION)_$(PG_VER)
 
-oss: .build_$(WARPSQL_VERSION)_$(PG_VER)_oss
+image-oss: .build_$(WARPSQL_VERSION)_$(PG_VER)_oss
 
 push: image
 	docker push $(TAG_VERSION)
@@ -89,7 +89,7 @@ push: image
 		docker push $(TAG_LATEST); \
 	fi
 
-push-oss: oss
+push-oss: image-oss
 	docker push $(TAG_VERSION)-oss
 	if [ -z "$(PRE_RELEASE)" ]; then \
 		docker push $(TAG_LATEST)-oss; \
@@ -105,4 +105,4 @@ clean:
 	rm -f *~ .build_* .multi_*
 	-docker buildx rm multibuild
 
-.PHONY: default image push push-oss oss multi multi-oss clean all
+.PHONY: default image push push-oss image-oss multi multi-oss clean all
