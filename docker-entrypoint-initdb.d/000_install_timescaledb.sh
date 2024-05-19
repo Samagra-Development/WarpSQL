@@ -2,8 +2,11 @@
 
 create_sql=`mktemp`
 
+log "INFO" "Starting TimescaleDB initialization script"
+
 # Checks to support bitnami image with same scripts so they stay in sync
 if [ ! -z "${BITNAMI_APP_NAME:-}" ]; then
+	log "INFO" "Detected Bitnami environment"
 	if [ -z "${POSTGRES_USER:-}" ]; then
 		POSTGRES_USER=${POSTGRESQL_USERNAME}
 	fi
@@ -27,6 +30,7 @@ EOF
 
 TS_TELEMETRY='basic'
 if [ "${TIMESCALEDB_TELEMETRY:-}" == "off" ]; then
+	echo "TimescaleDB telemetry is set to 'off'"
 	TS_TELEMETRY='off'
 
 	# We delete the job as well to ensure that we do not spam the
@@ -36,14 +40,20 @@ SELECT alter_job(1,scheduled:=false);
 EOF
 fi
 
+echo "Setting timescaledb.telemetry_level to ${TS_TELEMETRY}"
 echo "timescaledb.telemetry_level=${TS_TELEMETRY}" >> ${POSTGRESQL_CONF_DIR}/postgresql.conf
 
 export PGPASSWORD="$POSTGRESQL_PASSWORD"
 
 # create extension timescaledb in initial databases
+echo "Creating TimescaleDB extension in 'postgres' database"
 psql -U "${POSTGRES_USER}" postgres -f ${create_sql}
+echo "Creating TimescaleDB extension in 'template1' database"
 psql -U "${POSTGRES_USER}" template1 -f ${create_sql}
 
 if [ "${POSTGRES_DB:-postgres}" != 'postgres' ]; then
+	echo "Creating TimescaleDB extension in '${POSTGRES_DB}' database"
     psql -U "${POSTGRES_USER}" "${POSTGRES_DB}" -f ${create_sql}
 fi
+
+echo "TimescaleDB initialization completed successfully"
