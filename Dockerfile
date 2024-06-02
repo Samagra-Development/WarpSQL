@@ -320,6 +320,7 @@ RUN set -eux \
     && rm -rf /tmp/postgresql-hll-${POSTGRES_HLL_VERSION} /tmp/postgresql-hll-${POSTGRES_HLL_VERSION}.zip \
     && apk del .postgresql-hll-build-deps 
 
+
 # Install pg_jobmon
 ARG PG_JOBMON_VERSION
 RUN set -e \
@@ -391,3 +392,45 @@ RUN set -e \
     && rm /tmp/pg_partman.tar.gz \
     && rm -rf /tmp/pg_partman \
     && apk del .pg_partman-deps .pg_partman-build-deps 
+
+# Set RUSTFLAGS to disable CRT statically
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+
+# Install necessary dependencies
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    ruby-dev \
+    ruby-etc \
+    musl-dev \
+    make \
+    gcc \
+    coreutils \
+    util-linux-dev \
+    musl-dev \
+    openssl-dev \
+    clang-libs \
+    clang-dev \
+    tar
+
+# Install fpm gem
+RUN gem install --no-document fpm
+
+# Set the working directory and user
+WORKDIR /home/${USER}
+USER ${USER}
+
+# Install Rust using rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+    && source $HOME/.cargo/env \
+# Install cargo-pgrx
+RUN source $HOME/.cargo/env && cargo install cargo-pgrx --version 0.9.8
+
+# Initialize cargo-pgrx with the specified PostgreSQL version
+RUN source $HOME/.cargo/env && cargo pgrx init --pg${PG_VERSION}=$(which pg_config)
+
+# Now, build and install ZomboDB
+RUN git clone https://github.com/zombodb/zombodb.git /tmp/zombodb --depth=1 \
+    && cd /tmp/zombodb \
+    && source $HOME/.cargo/env && cargo pgrx install --release \
