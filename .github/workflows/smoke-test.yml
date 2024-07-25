@@ -55,6 +55,14 @@ jobs:
             fi
             if psql -c "select 1"
             then
+              echo "Test pg_search Extension"
+              psql -c "CREATE EXTENSION pg_search;"
+              
+              # Add pg_search smoke test
+              psql -c "CREATE TABLE test_pg_search_table (id serial PRIMARY KEY, content TEXT);"
+              psql -c "INSERT INTO test_pg_search_table (content) VALUES ('This is a test document'), ('Another test document');"
+              psql -c "SELECT * FROM pg_search_content('test', 'test_pg_search_table', 'content');"              
+
               echo "Test pg_cron Extension"
               psql -c "CREATE EXTENSION pg_cron";
               psql -c "SELECT cron.schedule('30 3 * * 6',\$\$DELETE FROM events WHERE event_time < now() - interval '1 week'\$\$)";
