@@ -56,7 +56,7 @@ RUN PG_MAJOR_VERSION=$(echo ${PG_VERSION} | cut -d '.' -f 1) && \
 
 
 RUN PG_MAJOR_VERSION=$(echo ${PG_VERSION} | cut -d '.' -f 1) && \
-    cargo build --release --features "pg${PG_MAJOR_VERSION}"
+    cargo build --release --no-default-features --features "pg${PG_MAJOR_VERSION}"
 
 ############################
 # Now build image and copy in tools
