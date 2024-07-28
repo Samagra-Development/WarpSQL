@@ -4,7 +4,7 @@ ARG TS_VERSION
 ############################
 # Build tools binaries in separate image
 ############################
-ARG GO_VERSION=1.18.7
+ARG GO_VERSION=1.21.0
 FROM golang:${GO_VERSION}-alpine AS tools
 
 ENV TOOLS_VERSION 0.8.1
@@ -25,6 +25,39 @@ RUN rm -f $(pg_config --sharedir)/extension/timescaledb*mock*.sql \
     && if [ -f $(pg_config --pkglibdir)/timescaledb-1*.so ]; then rm -f $(ls -1 $(pg_config --pkglibdir)/timescaledb-*.so | head -n -5); fi \
     && if [ -f $(pg_config --sharedir)/extension/timescaledb--1*.sql ]; then rm -f $(ls -1 $(pg_config --sharedir)/extension/timescaledb--1*.sql | head -n -5); fi
 
+###########################
+# Build pg_search in an environment with dynamic loading
+###########################
+FROM rust:latest AS pg_search_builder
+ARG PG_VERSION
+
+RUN apt-get update && apt-get install -y wget gnupg2 lsb-release
+
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+
+RUN apt-get update && apt-get install -y \
+    git \
+    postgresql-${PG_VERSION} \
+    postgresql-server-dev-${PG_VERSION}     \
+    libclang-dev
+
+RUN git clone --branch main https://github.com/paradedb/paradedb.git /paradedb
+WORKDIR /paradedb/pg_search
+
+RUN cargo install --locked cargo-pgrx --version 0.11.3
+
+RUN PG_MAJOR_VERSION=$(echo ${PG_VERSION} | cut -d '.' -f 1) && \
+    PG_CONFIG_PATH=$(which pg_config) && \
+    export PATH=$PATH:/usr/lib/postgresql/${PG_VERSION}/bin && \
+    cargo pgrx init --pg${PG_MAJOR_VERSION} ${PG_CONFIG_PATH}
+
+
+RUN PG_MAJOR_VERSION=$(echo ${PG_VERSION} | cut -d '.' -f 1) && \
+    cargo build --release --no-default-features --features "pg${PG_MAJOR_VERSION}"
+
 ############################
 # Now build image and copy in tools
 ############################
@@ -38,6 +71,12 @@ COPY docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/
 COPY --from=tools /go/bin/* /usr/local/bin/
 COPY --from=oldversions /usr/local/lib/postgresql/timescaledb-*.so /usr/local/lib/postgresql/
 COPY --from=oldversions /usr/local/share/postgresql/extension/timescaledb--*.sql /usr/local/share/postgresql/extension/
+
+# copy pg_search
+COPY --from=pg_search_builder /paradedb/target/release/libpg_search.so /usr/local/lib/postgresql/
+COPY --from=pg_search_builder /paradedb/pg_search/pg_search.control /usr/local/share/postgresql/extension/
+COPY --from=pg_search_builder /paradedb/pg_search/sql/*.sql /usr/local/share/postgresql/extension/
+
 
 ARG TS_VERSION
 RUN set -ex \
@@ -75,7 +114,8 @@ RUN set -ex \
 
 
 # Update to shared_preload_libraries
-RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_cron,pgautofailover'" >> /usr/local/share/postgresql/postgresql.conf.sample
+RUN echo "shared_preload_libraries = 'citus,timescaledb,pg_cron,pgautofailover,pg_search'" >> /usr/local/share/postgresql/postgresql.conf.sample
+
 # Adding PG Vector
 
 RUN cd /tmp
