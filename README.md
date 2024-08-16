@@ -23,6 +23,7 @@ WarpSQL is a powerful solution that provides opinionated extensions to Postgres,
 | [postgresql-hll](https://github.com/citusdata/postgresql-hll)    | 2.18   | 2.18   | 2.18   |
 | [PgJobmon](https://github.com/omniti-labs/pg_jobmon)             | 1.4.1  | 1.4.1  | 1.4.1  |
 | [PgPartman](https://github.com/pgpartman/pg_partman)             | 5.0.1  | 5.0.1  | 5.0.1  |
+| [pg_bestmatch](https://github.com/tensorchord/pg_bestmatch.rs)|   [commit 3126173](https://github.com/tensorchord/pg_bestmatch.rs/commit/312617392c8a32121907496f05c23fce1e3d056c)    |
 
 ## Releases
 - [Versioning Policy](./docs/version-policy.md)
