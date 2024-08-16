@@ -4,12 +4,12 @@ ARG TS_VERSION
 ############################
 # Build tools binaries in separate image
 ############################
-ARG GO_VERSION=1.19.1
+ARG GO_VERSION=1.23
 FROM golang:${GO_VERSION}-alpine AS tools
 
 ENV TOOLS_VERSION 0.8.1
 
-RUN apk update && apk add --no-cache git gcc \
+RUN apk update && apk add --no-cache git gcc musl-dev \
     && go install github.com/timescale/timescaledb-tune/cmd/timescaledb-tune@latest \
     && go install github.com/timescale/timescaledb-parallel-copy/cmd/timescaledb-parallel-copy@latest
 
@@ -426,7 +426,29 @@ RUN set -ex \
     && apt-get clean -y \
     && rm /tmp/pg_partman.tar.gz \
     && rm -rf /tmp/pg_partman 
-    
+
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+ARG PG_BESTMATCH_RS_SHA
+ARG PG_VERSION
+RUN apt-get update -y -qq \
+    && apt-get install -y curl gnupg openssl pkg-config libssl-dev git \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="/.cargo/bin:$PATH" \
+    && export PGRX_HOME="/.pgrx/" \
+    && mkdir -p $PGRX_HOME \
+    && cargo install cargo-pgrx --version 0.9.3 \
+    && rustup update stable \
+    && cd /tmp && git clone --branch main https://github.com/tensorchord/pg_bestmatch.git \ 
+    && cd pg_bestmatch \
+    && git checkout ${PG_BESTMATCH_RS_SHA} \
+    && export PATH="$HOME/.cargo/bin:$PATH" \
+    && cargo install --locked cargo-pgrx --version 0.12.0-alpha.1 \
+    && cargo pgrx init --pg${PG_VERSION}=$(which pg_config) \
+    && cargo pgrx install --release \ 
+    && cd .. \
+    && rm -rf ./pg_bestmatch \
+    && apt-get clean -y 
+
 USER 1001
 
 ENTRYPOINT [ "/opt/bitnami/scripts/postgresql/timescaledb-bitnami-entrypoint.sh" ]

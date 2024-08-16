@@ -98,6 +98,10 @@ jobs:
               psql -c "CREATE SCHEMA partman;"
               psql -c "CREATE EXTENSION pg_partman SCHEMA partman;"
 
+              echo "Test pg_bestmatch Extension"
+              psql -c "CREATE EXTENSION pg_bestmatch;"
+              psql -c "SET search_path TO public, bm_catalog;"
+
               break
             fi
             sleep 1
