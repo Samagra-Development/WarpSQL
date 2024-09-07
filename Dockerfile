@@ -92,7 +92,7 @@ RUN apk add --no-cache --virtual .build-deps \
                 make \
                 cmake \
                 util-linux-dev \
-                && git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git \
+                && git clone --branch v0.7.0 https://github.com/pgvector/pgvector.git \
                 && cd /pgvector \
                 && ls \
                 && make \
